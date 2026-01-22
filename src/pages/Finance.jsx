@@ -1,0 +1,103 @@
+import { useState, useEffect } from 'react';
+import FeeCollection from '../components/finance/FeeCollection';
+import ExpenseTracker from '../components/finance/ExpenseTracker';
+import FinanceSummary from '../components/finance/FinanceSummary';
+import { getFees, getExpenses } from '../services/finance';
+import { formatCurrency, cn } from '../lib/utils';
+
+export default function Finance() {
+  const [fees, setFees] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [feesData, expensesData] = await Promise.all([
+        getFees(),
+        getExpenses()
+      ]);
+      setFees(feesData);
+      setExpenses(expensesData);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const totalCollected = fees.reduce((acc, curr) => acc + (curr.paid || 0), 0);
+  const totalExpenses = expenses.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  const pendingFees = fees.reduce((acc, curr) => acc + (curr.due || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Finance Management</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage fees, expenses and financial reports</p>
+        </div>
+      </div>
+
+      <FinanceSummary 
+        totalCollected={totalCollected} 
+        totalExpenses={totalExpenses} 
+        pendingFees={pendingFees} 
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <FeeCollection onSuccess={fetchData} />
+        </div>
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+             <div className="px-6 py-4 border-b border-slate-200">
+                <h3 className="text-lg font-medium text-slate-900">Recent Transactions</h3>
+             </div>
+             <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Receipt No</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Student</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Month</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {fees.slice(0, 5).map((fee) => (
+                      <tr key={fee.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{fee.receiptNo}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{fee.studentName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{fee.month}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatCurrency(fee.paid)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={cn(
+                            "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
+                            fee.status === 'paid' ? "bg-green-100 text-green-800" : 
+                            fee.status === 'partial' ? "bg-yellow-100 text-yellow-800" : 
+                            "bg-red-100 text-red-800"
+                          )}>
+                            {fee.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+             </div>
+          </div>
+          
+          <div className="h-96">
+            <ExpenseTracker expenses={expenses} onUpdate={fetchData} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
