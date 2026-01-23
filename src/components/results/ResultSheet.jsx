@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { FileText, Printer } from 'lucide-react';
+import { FileText, Printer, Download } from 'lucide-react';
 import { getStudentsByClass } from '../../services/students';
 import { getClassExamResults } from '../../services/results';
+import { exportResultsToExcel } from '../../utils/excelGenerator';
 import { cn } from '../../lib/utils';
 
 const CLASSES = ["PG", "Nursery", "Prep", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
@@ -84,11 +85,43 @@ export default function ResultSheet() {
       return 'F';
   };
 
+  const handleExport = () => {
+    if (!generated || students.length === 0) return;
+  
+    const dataToExport = students.map(student => {
+      const row = {
+        'Roll No': student.rollNo,
+        'Name': student.name,
+      };
+  
+      subjects.forEach(sub => {
+        row[sub] = results[student.id]?.[sub] || '-';
+      });
+  
+      row['Total'] = calculateTotal(student.id);
+      row['Percentage'] = calculatePercentage(student.id) + '%';
+      row['Grade'] = getGrade(calculatePercentage(student.id));
+  
+      return row;
+    });
+  
+    exportResultsToExcel(dataToExport, `ResultSheet_${selectedExam}_Class_${selectedClass}`);
+    toast.success("Excel exported successfully");
+  };
+
   return (
     <div className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
       <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
         <h3 className="text-lg font-medium text-slate-900">Result Tabulation Sheet</h3>
         {generated && (
+          <div className="flex space-x-2">
+             <button 
+                onClick={handleExport}
+                className="inline-flex items-center px-3 py-1 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none"
+             >
+                 <Download className="h-4 w-4 mr-2" />
+                 Export Excel
+             </button>
              <button 
                 onClick={() => window.print()}
                 className="inline-flex items-center px-3 py-1 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none"
@@ -96,6 +129,7 @@ export default function ResultSheet() {
                  <Printer className="h-4 w-4 mr-2" />
                  Print
              </button>
+          </div>
         )}
       </div>
 

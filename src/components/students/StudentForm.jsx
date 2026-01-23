@@ -215,6 +215,16 @@ export default function StudentForm({ student, onSuccess, onClose }) {
                 <option value="expelled">Expelled</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Monthly Fee (PKR)</label>
+              <input
+                type="number"
+                {...register("monthlyFee", { required: "Monthly Fee is required", min: 0 })}
+                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                placeholder="e.g. 5000"
+              />
+              {errors.monthlyFee && <span className="text-red-500 text-xs">{errors.monthlyFee.message}</span>}
+            </div>
           </div>
         </div>
         
