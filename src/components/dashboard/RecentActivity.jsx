@@ -1,85 +1,55 @@
 import { format } from 'date-fns';
-import { UserPlus, CreditCard, CalendarX } from 'lucide-react';
+import { UserPlus, CreditCard, CalendarX, Trophy } from 'lucide-react';
 
 const activities = [
   {
     id: 1,
-    type: 'admission',
-    title: 'New Student Admission',
-    description: 'Ali Khan admitted to Class 9th',
-    date: new Date(),
-    icon: UserPlus,
-    color: 'bg-blue-100 text-blue-600',
+    title: "Mia Gordon won her match",
+    description: "contributing to the team's overall victory.",
+    time: "4:45 PM",
+    icon: Trophy,
+    color: "bg-[#FCD980] text-slate-900", // Yellow
   },
   {
     id: 2,
-    type: 'fee',
-    title: 'Fee Payment Received',
-    description: 'Received 5000 PKR from Sara Ahmed (Class 5)',
-    date: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
-    icon: CreditCard,
-    color: 'bg-green-100 text-green-600',
+    title: "Liam Fiddle and 20 others signed up",
+    description: "to volunteer on March 5th, Community Clean-Up Day Gains Momentum.",
+    time: "Yesterday, 8:29 PM",
+    icon: UserPlus,
+    color: "bg-[#FCD980] text-slate-900", // Yellow
   },
   {
     id: 3,
-    type: 'attendance',
-    title: 'Teacher On Leave',
-    description: 'Mr. Bilal is on sick leave today',
-    date: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    icon: CalendarX,
-    color: 'bg-yellow-100 text-yellow-600',
-  },
-  {
-    id: 4,
-    type: 'fee',
-    title: 'Fee Payment Received',
-    description: 'Received 4500 PKR from Usman (Class 3)',
-    date: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
+    title: "Fee Payment Received",
+    description: "Received 5000 PKR from Sara Ahmed (Class 5)",
+    time: "Today, 10:30 AM",
     icon: CreditCard,
-    color: 'bg-green-100 text-green-600',
-  },
+    color: "bg-[#2F80ED] text-white", // Blue
+  }
 ];
 
 export default function RecentActivity() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-100">
-      <div className="p-6 border-b border-slate-100">
-        <h3 className="text-lg font-semibold text-slate-800">Recent Activities</h3>
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-slate-800">Recent Activity</h3>
+        <button className="text-blue-600 text-sm font-semibold hover:underline">View All</button>
       </div>
-      <div className="p-6">
-        <div className="flow-root">
-          <ul role="list" className="-mb-8">
-            {activities.map((activity, activityIdx) => (
-              <li key={activity.id}>
-                <div className="relative pb-8">
-                  {activityIdx !== activities.length - 1 ? (
-                    <span
-                      className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200"
-                      aria-hidden="true"
-                    />
-                  ) : null}
-                  <div className="relative flex space-x-3">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white ${activity.color}`}>
-                      <activity.icon className="h-4 w-4" aria-hidden="true" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                      <div>
-                        <p className="text-sm text-slate-800">
-                          {activity.title} <span className="font-medium text-slate-500">- {activity.description}</span>
-                        </p>
-                      </div>
-                      <div className="text-right text-sm whitespace-nowrap text-slate-500">
-                        <time dateTime={activity.date.toISOString()}>
-                          {format(activity.date, 'h:mm a')}
-                        </time>
-                      </div>
-                    </div>
-                  </div>
+      
+      <div className="space-y-6">
+        {activities.map((activity) => (
+            <div key={activity.id} className="flex gap-4">
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${activity.color} shadow-sm`}>
+                    <activity.icon className="w-5 h-5" />
                 </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                <div>
+                    <p className="text-sm font-bold text-slate-800 leading-snug">
+                        {activity.title}, <span className="font-normal text-slate-500">{activity.description}</span>
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{activity.time}</p>
+                </div>
+            </div>
+        ))}
       </div>
     </div>
   );

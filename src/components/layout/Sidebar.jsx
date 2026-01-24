@@ -17,19 +17,23 @@ const navigation = [
   { name: 'Attendance', href: '/attendance', icon: CalendarCheck },
   { name: 'Finance', href: '/finance', icon: Receipt },
   { name: 'Results', href: '/results', icon: ClipboardList },
-  { name: 'Notices', href: '/notices', icon: Bell },
+  { name: 'Notice', href: '/notices', icon: Bell }, // Renamed from Notices
 ];
 
 export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="flex flex-col w-64 bg-slate-900 min-h-screen text-white">
-      <div className="flex items-center justify-center h-16 bg-slate-950 shadow-md">
-        <h1 className="text-xl font-bold tracking-wider">SMSP ADMIN</h1>
+    <div className="flex flex-col w-64 bg-white min-h-screen border-r border-slate-200">
+      <div className="flex items-center px-8 h-20">
+        <div className="flex items-center gap-2">
+           <GraduationCap className="h-8 w-8 text-blue-600" />
+           <span className="text-xl font-bold text-slate-800 tracking-tight">School Management</span>
+        </div>
       </div>
-      <div className="flex-1 flex flex-col py-4 overflow-y-auto">
-        <nav className="flex-1 px-2 space-y-1">
+      
+      <div className="flex-1 flex flex-col py-6 overflow-y-auto px-4">
+        <nav className="flex-1 space-y-2">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
@@ -38,15 +42,15 @@ export default function Sidebar() {
                 to={item.href}
                 className={clsx(
                   isActive
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white',
-                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600',
+                  'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200'
                 )}
               >
                 <item.icon
                   className={clsx(
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-white',
-                    'mr-3 flex-shrink-0 h-6 w-6 transition-colors'
+                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-600',
+                    'mr-3 flex-shrink-0 h-5 w-5 transition-colors'
                   )}
                   aria-hidden="true"
                 />
@@ -56,10 +60,12 @@ export default function Sidebar() {
           })}
         </nav>
       </div>
-      <div className="p-4 bg-slate-950">
-        <p className="text-xs text-slate-500 text-center">
-          © 2026 Iqbal High School
-        </p>
+      
+      <div className="p-6">
+        <div className="bg-slate-50 rounded-xl p-4">
+           <p className="text-xs text-slate-500 font-medium">Admin Panel</p>
+           <p className="text-[10px] text-slate-400 mt-1">© 2026 All Rights Reserved</p>
+        </div>
       </div>
     </div>
   );

@@ -53,32 +53,33 @@ export default function Finance() {
         <div className="lg:col-span-1">
           <FeeCollection onSuccess={fetchData} />
         </div>
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-             <div className="px-6 py-4 border-b border-slate-200">
-                <h3 className="text-lg font-medium text-slate-900">Recent Transactions</h3>
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+             <div className="px-6 py-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-800">Recent Transactions</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</button>
              </div>
              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
+                <table className="min-w-full divide-y divide-slate-100">
                   <thead className="bg-slate-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Receipt No</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Student</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Month</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Receipt No</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Student</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Month</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
+                  <tbody className="bg-white divide-y divide-slate-100">
                     {fees.slice(0, 5).map((fee) => (
-                      <tr key={fee.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{fee.receiptNo}</td>
+                      <tr key={fee.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">{fee.receiptNo}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{fee.studentName}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{fee.month}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatCurrency(fee.paid)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{formatCurrency(fee.paid)}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={cn(
-                            "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
+                            "px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full",
                             fee.status === 'paid' ? "bg-green-100 text-green-800" : 
                             fee.status === 'partial' ? "bg-yellow-100 text-yellow-800" : 
                             "bg-red-100 text-red-800"
@@ -93,7 +94,7 @@ export default function Finance() {
              </div>
           </div>
           
-          <div className="h-96">
+          <div className="h-[500px]">
             <ExpenseTracker expenses={expenses} onUpdate={fetchData} />
           </div>
         </div>

@@ -8,33 +8,13 @@ import {
   getDoc,
   query,
   where,
-  orderBy,
-  limit,
-  startAfter
+  orderBy
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 const COLLECTION_NAME = "teachers";
 
-export const getAllTeachers = async () => {
-  try {
-    const q = collection(db, COLLECTION_NAME);
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error("Error fetching teachers:", error);
-    throw error;
-  }
-};
-
-export const getTeachersPaginated = async ({ 
-  lastDoc = null, 
-  limitSize = 10, 
-  searchTerm = '' 
-}) => {
+export const getAllTeachers = async ({ searchTerm = '' } = {}) => {
   try {
     let constraints = [collection(db, COLLECTION_NAME)];
 
@@ -43,32 +23,34 @@ export const getTeachersPaginated = async ({
       constraints.push(where("name", "<=", searchTerm + '\uf8ff'));
       constraints.push(orderBy("name"));
     } else {
-      constraints.push(orderBy("createdAt", "desc"));
+      // constraints.push(orderBy("createdAt", "desc"));
     }
-
-    if (lastDoc) {
-      constraints.push(startAfter(lastDoc));
-    }
-
-    constraints.push(limit(limitSize));
 
     const q = query(...constraints);
     const querySnapshot = await getDocs(q);
     
-    const data = querySnapshot.docs.map(doc => ({
+    let results = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    return { 
-      data, 
-      lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1] 
-    };
+    // Client-side sorting
+    if (!searchTerm) {
+      results.sort((a, b) => {
+        const dateA = a.createdAt || '';
+        const dateB = b.createdAt || '';
+        return dateB.localeCompare(dateA);
+      });
+    }
+
+    return results;
   } catch (error) {
-    console.error("Error fetching paginated teachers:", error);
+    console.error("Error fetching teachers:", error);
     throw error;
   }
 };
+
+
 
 export const getTeacherById = async (id) => {
   try {

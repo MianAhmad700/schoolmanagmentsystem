@@ -8,45 +8,17 @@ import {
   getDoc, 
   query, 
   where, 
-  orderBy, 
-  limit, 
-  startAfter 
+  orderBy 
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 const COLLECTION_NAME = "students";
 
-export const getAllStudents = async (filter = {}) => {
-  try {
-    let q = collection(db, COLLECTION_NAME);
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error("Error fetching students:", error);
-    throw error;
-  }
-};
-
-export const getStudentsPaginated = async ({ 
-  lastDoc = null, 
-  limitSize = 10, 
-  filterClass = null, 
-  searchTerm = '' 
-}) => {
+export const getAllStudents = async ({ filterClass = null, searchTerm = '' } = {}) => {
   try {
     let constraints = [collection(db, COLLECTION_NAME)];
 
-    // Search or Filter logic
-    // Note: Firestore has limitations on multiple range filters and mixing equality/range
-    // We prioritize Search over Class Filter if both are present to avoid complex index requirements for now,
-    // or we can try to combine them if we assume indexes are/will be created.
-    
     if (searchTerm) {
-      // Case-sensitive prefix search (standard Firestore)
-      // Ideally we store a lowercase version for case-insensitive search
       constraints.push(where("name", ">=", searchTerm));
       constraints.push(where("name", "<=", searchTerm + '\uf8ff'));
       constraints.push(orderBy("name"));
@@ -54,33 +26,35 @@ export const getStudentsPaginated = async ({
       if (filterClass) {
         constraints.push(where("classId", "==", filterClass));
       }
-      // Default ordering
-      constraints.push(orderBy("createdAt", "desc"));
+      // Removed server-side sorting to prevent missing index errors and ensure all docs are returned
+      // constraints.push(orderBy("createdAt", "desc"));
     }
-
-    if (lastDoc) {
-      constraints.push(startAfter(lastDoc));
-    }
-
-    constraints.push(limit(limitSize));
 
     const q = query(...constraints);
     const querySnapshot = await getDocs(q);
     
-    const data = querySnapshot.docs.map(doc => ({
+    let results = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    return { 
-      data, 
-      lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1] 
-    };
+    // Client-side sorting
+    if (!searchTerm) {
+      results.sort((a, b) => {
+        const dateA = a.createdAt || '';
+        const dateB = b.createdAt || '';
+        return dateB.localeCompare(dateA);
+      });
+    }
+
+    return results;
   } catch (error) {
-    console.error("Error fetching paginated students:", error);
+    console.error("Error fetching students:", error);
     throw error;
   }
 };
+
+
 
 export const getStudentsByClass = async (className) => {
   try {

@@ -1,16 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Save, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Users } from 'lucide-react';
+import { Save, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Users, ArrowUpRight } from 'lucide-react';
 import { getStudentsByClass } from '../../services/students';
 import { markClassAttendance, getClassAttendance } from '../../services/attendance';
 import clsx from 'clsx';
+import { cn } from '../../lib/utils';
 
 const ATTENDANCE_STATUSES = [
-  { id: 'present', label: 'Present', icon: Check, color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-200' },
-  { id: 'absent', label: 'Absent', icon: X, color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' },
-  { id: 'leave', label: 'Leave', icon: AlertCircle, color: 'text-yellow-600', bg: 'bg-yellow-100', border: 'border-yellow-200' },
-  { id: 'late', label: 'Late', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-200' },
+  { 
+    id: 'present', 
+    label: 'Present', 
+    icon: Check, 
+    color: 'text-green-600', 
+    cardClass: 'bg-[#27AE60] text-white',
+    iconClass: 'text-white'
+  },
+  { 
+    id: 'absent', 
+    label: 'Absent', 
+    icon: X, 
+    color: 'text-red-600', 
+    cardClass: 'bg-[#EB5757] text-white',
+    iconClass: 'text-white'
+  },
+  { 
+    id: 'leave', 
+    label: 'Leave', 
+    icon: AlertCircle, 
+    color: 'text-yellow-600', 
+    cardClass: 'bg-[#FCD980] text-slate-900',
+    iconClass: 'text-slate-900'
+  },
+  { 
+    id: 'late', 
+    label: 'Late', 
+    icon: Clock, 
+    color: 'text-blue-600', 
+    cardClass: 'bg-[#2F80ED] text-white',
+    iconClass: 'text-white'
+  },
 ];
 
 export default function AttendanceSheet({ selectedClass, selectedDate }) {
@@ -88,29 +117,10 @@ export default function AttendanceSheet({ selectedClass, selectedDate }) {
 
   if (!selectedClass || !selectedDate) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg shadow border border-slate-200">
+      <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-100">
         <CalendarIcon className="mx-auto h-12 w-12 text-slate-300" />
         <h3 className="mt-2 text-sm font-medium text-slate-900">No Class Selected</h3>
         <p className="mt-1 text-sm text-slate-500">Please select a class and date to mark attendance.</p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-        <p className="mt-2 text-slate-500">Loading student list...</p>
-      </div>
-    );
-  }
-
-  if (students.length === 0) {
-    return (
-      <div className="text-center py-12 bg-white rounded-lg shadow border border-slate-200">
-        <Users className="mx-auto h-12 w-12 text-slate-300" />
-        <h3 className="mt-2 text-sm font-medium text-slate-900">No Students Found</h3>
-        <p className="mt-1 text-sm text-slate-500">There are no students in this class.</p>
       </div>
     );
   }
@@ -125,122 +135,152 @@ export default function AttendanceSheet({ selectedClass, selectedDate }) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {ATTENDANCE_STATUSES.map(status => (
-          <div key={status.id} className={clsx("bg-white p-4 rounded-lg shadow-sm border-l-4", status.border)}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">{status.label}</p>
-                <p className="text-2xl font-bold text-slate-800">{summary[status.id]}</p>
-              </div>
-              <status.icon className={clsx("h-8 w-8 opacity-20", status.color)} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Action Bar */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <span className="text-sm text-slate-500 self-center mr-2">Mark All:</span>
-        {ATTENDANCE_STATUSES.map(status => (
-           <button
-             key={status.id}
-             onClick={() => markAll(status.id)}
-             className={clsx(
-               "px-3 py-1 text-xs font-medium rounded-full border transition-colors",
-               "bg-white hover:bg-slate-50 text-slate-700 border-slate-300"
-             )}
-           >
-             {status.label}
-           </button>
-        ))}
-      </div>
-
-      {/* Student List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-slate-200">
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-                <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Student
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Roll No
-                </th>
-                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Status
-                </th>
-                </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
-                {students.map((student) => (
-                <tr key={student.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                            {student.photoUrl ? (
-                                <img className="h-8 w-8 rounded-full object-cover" src={student.photoUrl} alt="" />
-                            ) : (
-                                <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold">
-                                {student.name.charAt(0)}
-                                </div>
-                            )}
-                        </div>
-                        <div className="ml-4">
-                            <div className="text-sm font-medium text-slate-900">{student.name}</div>
-                            <div className="text-xs text-slate-500">{student.fatherName}</div>
-                        </div>
-                    </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                        {student.rollNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex justify-center gap-2">
-                            {ATTENDANCE_STATUSES.map(status => (
-                                <button
-                                    key={status.id}
-                                    onClick={() => handleStatusChange(student.id, status.id)}
-                                    className={clsx(
-                                        "p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500",
-                                        attendance[student.id] === status.id
-                                            ? `${status.bg} ${status.color} shadow-sm scale-110`
-                                            : "bg-slate-50 text-slate-300 hover:bg-slate-100"
-                                    )}
-                                    title={status.label}
-                                >
-                                    <status.icon className="h-5 w-5" />
-                                </button>
-                            ))}
-                        </div>
-                    </td>
-                </tr>
-                ))}
-            </tbody>
-            </table>
-        </div>
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+    <div className="flex flex-col lg:flex-row h-full gap-6">
+      {/* Left: Table Section (Grow) */}
+      <div className="flex-1 flex flex-col min-h-0">
+          
+        {/* Action Bar */}
+        <div className="flex flex-wrap gap-2 items-center shrink-0 mb-4">
+            <span className="text-sm font-medium text-slate-700 mr-2">Mark All As:</span>
+            {ATTENDANCE_STATUSES.map(status => (
             <button
-                onClick={handleSave}
-                disabled={saving}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-                {saving ? (
-                    <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                        Saving...
-                    </>
-                ) : (
-                    <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Attendance
-                    </>
+                key={status.id}
+                onClick={() => markAll(status.id)}
+                className={clsx(
+                "px-4 py-1.5 text-xs font-medium rounded-xl border transition-all",
+                "bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-sm hover:shadow"
                 )}
+            >
+                {status.label}
             </button>
+            ))}
         </div>
+
+        {/* Student List */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col flex-1 min-h-0 overflow-hidden relative">
+            <div className="flex-1 overflow-auto relative">
+                <table className="min-w-full divide-y divide-slate-100">
+                <thead className="bg-blue-500 sticky top-0 z-10">
+                    <tr>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                        Student
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                        Roll No
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider">
+                        Status
+                    </th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-100">
+                    {loading ? (
+                        <tr>
+                            <td colSpan="3" className="px-6 py-24 text-center">
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                                <p className="mt-2 text-slate-500">Loading student list...</p>
+                            </td>
+                        </tr>
+                    ) : students.length === 0 ? (
+                        <tr>
+                            <td colSpan="3" className="px-6 py-24 text-center">
+                                <Users className="mx-auto h-12 w-12 text-slate-300" />
+                                <h3 className="mt-2 text-sm font-medium text-slate-900">No Students Found</h3>
+                                <p className="mt-1 text-sm text-slate-500">There are no students in this class.</p>
+                            </td>
+                        </tr>
+                    ) : (
+                        students.map((student) => (
+                        <tr key={student.id} className="transition-colors even:bg-blue-50 hover:bg-slate-50/80">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                                <div className="flex-shrink-0 h-10 w-10">
+                                    {student.photoUrl ? (
+                                        <img className="h-10 w-10 rounded-full object-cover" src={student.photoUrl} alt="" />
+                                    ) : (
+                                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                                        {student.name.charAt(0)}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="ml-4">
+                                    <div className="text-sm font-medium text-slate-900">{student.name}</div>
+                                    <div className="text-xs text-slate-500">{student.fatherName}</div>
+                                </div>
+                            </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                {student.rollNo || '-'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex justify-center gap-3">
+                                    {ATTENDANCE_STATUSES.map(status => (
+                                        <button
+                                            key={status.id}
+                                            onClick={() => handleStatusChange(student.id, status.id)}
+                                            className={cn(
+                                                "p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500",
+                                                attendance[student.id] === status.id
+                                                    ? `bg-${status.color.split('-')[1]}-100 ${status.color} ring-2 ring-${status.color.split('-')[1]}-400 scale-110`
+                                                    : "bg-slate-100 text-slate-300 hover:bg-slate-200"
+                                            )}
+                                            title={status.label}
+                                        >
+                                            <status.icon className="h-5 w-5" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </td>
+                        </tr>
+                        ))
+                    )}
+                </tbody>
+                </table>
+            </div>
+            {!loading && students.length > 0 && (
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+                    >
+                        {saving ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4 mr-2" />
+                                Save Attendance
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
+        </div>
+      </div>
+
+      {/* Right: Summary Section (Fixed width) */}
+      <div className="w-full lg:w-80 shrink-0 px-6 py-12">
+          <div className="grid grid-cols-1 gap-4 sticky top-6">
+            {ATTENDANCE_STATUSES.map(status => (
+            <div key={status.id} className={cn("rounded-2xl p-4 relative overflow-hidden transition-all hover:shadow-lg flex flex-col justify-between h-32", status.cardClass)}>
+                <div className="flex justify-between items-start">
+                    <h3 className="text-3xl font-bold tracking-tight">{summary[status.id]}</h3>
+                    <div className={cn("p-1.5 rounded-full border border-current opacity-60", status.iconClass)}>
+                        <ArrowUpRight className="w-4 h-4" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 mt-auto">
+                    <p className="font-medium text-sm opacity-90">{status.label}</p>
+                </div>
+                
+                {/* Decorative Icon Watermark */}
+                <status.icon className="absolute -bottom-3 -right-3 w-16 h-16 opacity-10 rotate-12" />
+            </div>
+            ))}
+          </div>
       </div>
     </div>
   );

@@ -2,56 +2,39 @@ import { useState, useEffect } from 'react';
 import { 
   Users, 
   GraduationCap, 
-  CreditCard, 
-  Wallet,
-  ArrowUpRight,
-  ArrowDownRight
+  UserCheck,
+  Trophy
 } from 'lucide-react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import StatsCard from '../components/dashboard/StatsCard';
-import RevenueChart from '../components/dashboard/RevenueChart';
-import AttendanceChart from '../components/dashboard/AttendanceChart';
-import RecentActivity from '../components/dashboard/RecentActivity';
+import RevenueChart from '../components/dashboard/RevenueChart'; // Now Area Chart
+import AttendanceChart from '../components/dashboard/AttendanceChart'; // Now Bar Chart
+import StudentGenderChart from '../components/dashboard/StudentGenderChart'; // New Donut Chart
+import CalendarWidget from '../components/dashboard/CalendarWidget';
+import UpcomingEvents from '../components/dashboard/UpcomingEvents';
+import NoticeBoard from '../components/dashboard/NoticeBoard';
 import { formatCurrency } from '../lib/utils';
 
 export default function Dashboard() {
   const [stats, setStats] = useState([
     {
-      title: "Total Students",
+      title: "Students",
       value: "...",
       icon: Users,
-      trend: "0%",
-      trendUp: true,
-      description: "since last month",
-      color: "blue"
+      color: "yellow"
     },
     {
-      title: "Total Teachers",
+      title: "Teachers",
       value: "...",
       icon: GraduationCap,
-      trend: "0",
-      trendUp: true,
-      description: "active staff",
-      color: "purple"
+      color: "yellow"
     },
     {
-      title: "Fee Collected",
+      title: "Staffs",
       value: "...",
-      icon: CreditCard,
-      trend: "0%",
-      trendUp: true,
-      description: "total collected",
-      color: "green"
-    },
-    {
-      title: "Pending Fees",
-      value: "...",
-      icon: Wallet,
-      trend: "0%",
-      trendUp: false,
-      description: "total pending",
-      color: "red"
+      icon: UserCheck,
+      color: "blue"
     }
   ]);
   const [loading, setLoading] = useState(true);
@@ -70,53 +53,25 @@ export default function Dashboard() {
       const teachersSnap = await getDocs(collection(db, 'teachers'));
       const teacherCount = teachersSnap.size;
 
-      // 3. Finance Stats
-      const feesSnap = await getDocs(collection(db, 'fees'));
-      let totalCollected = 0;
-      let totalPending = 0;
-      
-      feesSnap.forEach(doc => {
-        const data = doc.data();
-        totalCollected += Number(data.paid) || 0;
-        totalPending += Number(data.due) || 0;
-      });
-
+      // Mock other data for visual fidelity to reference
       setStats([
         {
-          title: "Total Students",
+          title: "Students",
           value: studentCount.toString(),
           icon: Users,
-          trend: "+12%", // Mock trend for now
-          trendUp: true,
-          description: "active students",
-          color: "blue"
+          color: "yellow"
         },
         {
-          title: "Total Teachers",
+          title: "Teachers",
           value: teacherCount.toString(),
           icon: GraduationCap,
-          trend: "+2", // Mock trend
-          trendUp: true,
-          description: "active staff",
-          color: "purple"
+          color: "yellow"
         },
         {
-          title: "Fee Collected",
-          value: formatCurrency(totalCollected),
-          icon: CreditCard,
-          trend: "+8%", // Mock trend
-          trendUp: true,
-          description: "all time",
-          color: "green"
-        },
-        {
-          title: "Pending Fees",
-          value: formatCurrency(totalPending),
-          icon: Wallet,
-          trend: "5%", // Mock trend
-          trendUp: false,
-          description: "unpaid dues",
-          color: "red"
+          title: "Staffs",
+          value: "165", // Mocked
+          icon: UserCheck,
+          color: "blue"
         }
       ]);
     } catch (error) {
@@ -127,27 +82,34 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
-        <div className="text-sm text-slate-500">
-          Last updated: {new Date().toLocaleDateString()}
+    <div className="flex flex-col lg:flex-row gap-6 min-h-screen">
+      {/* Main Content Area */}
+      <div className="flex-1 space-y-6">
+        
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stats.map((stat, index) => (
+            <StatsCard key={index} {...stat} />
+          ))}
+        </div>
+
+        {/* Charts Row 1: Students (Donut) & Earnings (Area) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <StudentGenderChart />
+          <RevenueChart />
+        </div>
+
+        {/* Charts Row 2: Attendance (Bar) & Notice Board */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AttendanceChart />
+          <NoticeBoard />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatsCard key={index} {...stat} />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RevenueChart />
-        <AttendanceChart />
-      </div>
-
-      <div className="grid grid-cols-1">
-        <RecentActivity />
+      {/* Right Sidebar */}
+      <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
+        <CalendarWidget />
+        <UpcomingEvents />
       </div>
     </div>
   );

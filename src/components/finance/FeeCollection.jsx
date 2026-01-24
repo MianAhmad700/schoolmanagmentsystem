@@ -126,113 +126,122 @@ export default function FeeCollection({ onSuccess }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow border border-slate-200 p-6">
-      <h3 className="text-lg font-medium text-slate-900 mb-4">Collect Fees</h3>
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Class Selection */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Class</label>
-          <select
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            required
-          >
-            <option value="">Select Class</option>
-            {CLASSES.map(cls => (
-              <option key={cls} value={cls}>{cls}</option>
-            ))}
-          </select>
-        </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-slate-800">Collect Fees</h3>
+      </div>
 
-        {/* Student Selection */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Student</label>
-          <select
-            {...register("studentId", { required: true })}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            disabled={!selectedClass || loadingStudents}
-          >
-            <option value="">Select Student</option>
-            {students.map(s => (
-              <option key={s.id} value={s.id}>{s.name} ({s.rollNo})</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Month and Year */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Month</label>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col">
+        <div className="space-y-4">
+            {/* Class Selection */}
+            <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Class</label>
             <select
-              {...register("month", { required: true })}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             >
-              {MONTHS.map(m => (
-                <option key={m} value={m}>{m}</option>
-              ))}
+                <option value="">Select Class</option>
+                {CLASSES.map(c => <option key={c} value={c}>Class {c}</option>)}
             </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Year</label>
-            <input
-              type="number"
-              {...register("year", { required: true })}
-              className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
+            </div>
+
+            {/* Student Selection */}
+            <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Student</label>
+            <div className="relative">
+                <select
+                    {...register("studentId", { required: true })}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none disabled:opacity-50"
+                    disabled={!selectedClass || loadingStudents}
+                >
+                <option value="">Select Student</option>
+                {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.rollNo})</option>)}
+                </select>
+                {loadingStudents && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                    </div>
+                )}
+            </div>
+            </div>
+
+            {/* Month & Year */}
+            <div className="grid grid-cols-2 gap-4">
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Month</label>
+                <select
+                {...register("month", { required: true })}
+                className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                >
+                {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Year</label>
+                <input
+                type="number"
+                {...register("year", { required: true })}
+                className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+            </div>
+            </div>
         </div>
 
-        {/* Amount Section */}
-        <div className="p-4 bg-slate-50 rounded-md space-y-4 border border-slate-200">
+        <div className="bg-slate-50 rounded-xl p-4 space-y-4 border border-slate-100 mt-auto">
             <div>
-            <label className="block text-sm font-medium text-slate-700">Total Payable Amount (PKR)</label>
-            <input
-                type="number"
-                {...register("total", { required: true, min: 0 })}
-                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white"
-                placeholder="0.00"
-            />
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Payable Amount (PKR)</label>
+                <input
+                    type="number"
+                    {...register("total")}
+                    readOnly
+                    className="block w-full px-4 py-2.5 bg-white border-slate-200 rounded-xl text-sm text-slate-500 focus:outline-none"
+                />
             </div>
 
             <div>
-            <label className="block text-sm font-medium text-slate-700">Payment Amount (PKR)</label>
-            <input
-                type="number"
-                {...register("paid", { required: true, min: 0 })}
-                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="0.00"
-            />
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Payment Amount (PKR)</label>
+                <input
+                    type="number"
+                    {...register("paid", { required: true })}
+                    className="block w-full px-4 py-2.5 bg-white border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
             </div>
 
-            {/* Dynamic Status Display */}
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+            <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
                 <div>
-                    <span className="text-xs text-slate-500 uppercase font-semibold">Status</span>
-                    <div className={`text-lg font-bold ${
+                    <p className="text-xs text-slate-500 uppercase font-bold">Status</p>
+                    <p className={`text-lg font-bold ${
                         calculateStatus() === 'Paid in Full' ? 'text-green-600' :
-                        calculateStatus() === 'Partially Paid' ? 'text-orange-500' : 'text-red-500'
+                        calculateStatus() === 'Partially Paid' ? 'text-yellow-600' :
+                        calculateStatus() === 'Unpaid' ? 'text-red-600' : 'text-slate-400'
                     }`}>
                         {calculateStatus()}
-                    </div>
+                    </p>
                 </div>
-                <div>
-                    <span className="text-xs text-slate-500 uppercase font-semibold">Balance / Due</span>
-                    <div className="text-lg font-bold text-slate-800">
-                        PKR {calculateDue()}
-                    </div>
+                <div className="text-right">
+                    <p className="text-xs text-slate-500 uppercase font-bold">Balance / Due</p>
+                    <p className="text-lg font-bold text-slate-800">PKR {calculateDue()}</p>
                 </div>
             </div>
         </div>
 
         <button
-          type="submit"
-          disabled={submitting}
-          className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            type="submit"
+            disabled={submitting}
+            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
         >
-          <Save className="h-4 w-4 mr-2" />
-          {submitting ? 'Processing...' : 'Collect Fee & Generate Receipt'}
+            {submitting ? (
+                <>
+                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                Processing...
+                </>
+            ) : (
+                <>
+                <Save className="h-4 w-4 mr-2" />
+                Collect Fee
+                </>
+            )}
         </button>
       </form>
     </div>

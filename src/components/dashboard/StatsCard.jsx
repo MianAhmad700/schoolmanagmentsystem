@@ -1,40 +1,37 @@
 import { cn } from '../../lib/utils';
+import { ArrowUpRight } from 'lucide-react';
 
-export default function StatsCard({ title, value, icon: Icon, trend, trendUp, description, color = "blue" }) {
+export default function StatsCard({ title, value, icon: Icon, color = "yellow" }) {
   const colorStyles = {
-    blue: "bg-blue-50 text-blue-600",
-    green: "bg-green-50 text-green-600",
-    red: "bg-red-50 text-red-600",
-    yellow: "bg-yellow-50 text-yellow-600",
-    purple: "bg-purple-50 text-purple-600",
+    yellow: "bg-[#FCD980] text-slate-900", // Yellowish Orange
+    blue: "bg-[#2F80ED] text-white", // Bright Blue
+    green: "bg-[#27AE60] text-white", // Green
+    red: "bg-[#EB5757] text-white", // Red
+    white: "bg-white text-slate-900 border border-slate-100"
+  };
+
+  const iconColorStyles = {
+    yellow: "text-slate-900",
+    blue: "text-white",
+    green: "text-white",
+    red: "text-white",
+    white: "text-blue-600"
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100 transition-all hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-800">{value}</p>
-        </div>
-        <div className={cn("p-3 rounded-lg", colorStyles[color])}>
-          <Icon className="w-6 h-6" />
+    <div className={cn("rounded-2xl p-6 relative overflow-hidden transition-all hover:shadow-lg", colorStyles[color])}>
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-4xl font-bold tracking-tight">{value}</h3>
+        <div className={cn("p-2 rounded-full border border-current opacity-60", iconColorStyles[color])}>
+          <ArrowUpRight className="w-5 h-5" />
         </div>
       </div>
-      {(trend || description) && (
-        <div className="mt-4 flex items-center text-sm">
-          {trend && (
-            <span className={cn(
-              "font-medium mr-2",
-              trendUp ? "text-green-600" : "text-red-600"
-            )}>
-              {trendUp ? "+" : ""}{trend}
-            </span>
-          )}
-          {description && (
-            <span className="text-slate-400">{description}</span>
-          )}
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+         <p className="font-medium text-lg opacity-90">{title}</p>
+      </div>
+      
+      {/* Decorative Icon Watermark */}
+      <Icon className="absolute -bottom-4 -right-4 w-24 h-24 opacity-10 rotate-12" />
     </div>
   );
 }

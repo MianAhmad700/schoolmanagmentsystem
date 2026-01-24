@@ -1,48 +1,33 @@
 import { formatCurrency } from '../../lib/utils';
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
-import clsx from 'clsx';
+import StatsCard from '../dashboard/StatsCard';
 
 export default function FinanceSummary({ totalCollected, totalExpenses, pendingFees }) {
   const stats = [
     {
       title: 'Total Collected',
-      value: totalCollected,
+      value: formatCurrency(totalCollected),
       icon: TrendingUp,
-      color: 'text-green-600',
-      bg: 'bg-green-100',
+      color: 'green',
     },
     {
       title: 'Total Expenses',
-      value: totalExpenses,
+      value: formatCurrency(totalExpenses),
       icon: TrendingDown,
-      color: 'text-red-600',
-      bg: 'bg-red-100',
+      color: 'red',
     },
     {
       title: 'Pending Fees',
-      value: pendingFees,
+      value: formatCurrency(pendingFees),
       icon: Wallet,
-      color: 'text-yellow-600',
-      bg: 'bg-yellow-100',
+      color: 'yellow',
     },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {stats.map((stat) => (
-        <div key={stat.title} className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900">
-                {formatCurrency(stat.value)}
-              </p>
-            </div>
-            <div className={clsx("p-3 rounded-full", stat.bg)}>
-              <stat.icon className={clsx("h-6 w-6", stat.color)} />
-            </div>
-          </div>
-        </div>
+        <StatsCard key={stat.title} {...stat} />
       ))}
     </div>
   );

@@ -1,96 +1,148 @@
 import { Edit, Trash2, Eye } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useState } from 'react';
 
-export default function StudentTable({ students, onEdit, onDelete, onView }) {
+export default function StudentTable({ students, loading, onEdit, onDelete, onView, className }) {
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === students.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(students.map(s => s.id));
+    }
+  };
+
+  const toggleSelect = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(sid => sid !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow border border-slate-200">
-      <table className="min-w-full divide-y divide-slate-200">
-        <thead className="bg-slate-50">
+    <div className={cn("overflow-auto bg-blue rounded-2xl shadow-sm border border-slate-100 relative", className)}>
+      <table className="min-w-full divide-y divide-slate-100">
+        <thead className="bg-blue-500 sticky top-0 z-10">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Student Info
+            <th scope="col" className="px-6 py-4 text-left">
+              <input
+                type="checkbox"
+                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                checked={students.length > 0 && selectedIds.length === students.length}
+                onChange={toggleSelectAll}
+              />
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Class/Roll No
+            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              Student Name
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Parent Details
+            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              ID
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+             <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              Class
+            </th>
+            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+              Parent
+            </th>
+            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
               Status
             </th>
-            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Actions
+            <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-white uppercase tracking-wider">
+              Action
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-slate-200">
-          {students.length === 0 ? (
+        <tbody className="bg-white divide-y divide-slate-100">
+          {loading ? (
             <tr>
-              <td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">
+              <td colSpan="7" className="px-6 py-24 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                <p className="mt-2 text-slate-500">Loading students...</p>
+              </td>
+            </tr>
+          ) : students.length === 0 ? (
+            <tr>
+              <td colSpan="7" className="px-6 py-8 text-center text-sm text-slate-500">
                 No students found.
               </td>
             </tr>
           ) : (
-            students.map((student) => (
-              <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      {student.photoUrl ? (
-                        <img className="h-10 w-10 rounded-full object-cover" src={student.photoUrl} alt="" />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                          {student.name.charAt(0)}
-                        </div>
-                      )}
+            students.map((student) => {
+              const isSelected = selectedIds.includes(student.id);
+              return (
+                <tr 
+                  key={student.id} 
+                  className={cn(
+                    "transition-colors even:bg-blue-50",
+                    isSelected && "bg-blue-50"
+                  )}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                      checked={isSelected}
+                      onChange={() => toggleSelect(student.id)}
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        {student.photoUrl ? (
+                          <img className="h-10 w-10 rounded-full object-cover" src={student.photoUrl} alt="" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                            {student.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-slate-900">{student.name}</div>
+                      </div>
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-slate-900">{student.name}</div>
-                      <div className="text-sm text-slate-500">{student.admissionNo}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    #{student.admissionNo}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                      {student.classId}
+                    </span>
+                  </td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    {student.fatherName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={cn(
+                      "px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full",
+                      student.status === 'active' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    )}>
+                      {student.status || 'Active'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => onDelete(student.id)}
+                        className="text-slate-400 hover:text-red-600 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                       <button
+                        onClick={() => onEdit(student)}
+                        className="text-slate-400 hover:text-blue-600 transition-colors"
+                        title="Edit"
+                      >
+                        <Edit className="h-5 w-5" />
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-900">{student.classId}</div>
-                  <div className="text-sm text-slate-500">Roll: {student.rollNo}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-900">{student.fatherName}</div>
-                  <div className="text-sm text-slate-500">{student.phone}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={cn(
-                    "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
-                    student.status === 'active' ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  )}>
-                    {student.status || 'Active'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => onView(student)}
-                      className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(student)}
-                      className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(student.id)}
-                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
