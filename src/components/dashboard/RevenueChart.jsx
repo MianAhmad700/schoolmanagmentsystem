@@ -1,27 +1,143 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getAllFees, getAllExpenses } from '../../services/finance';
 
-const data = [
-  { name: 'Jan', earnings: 40000, expenses: 24000 },
-  { name: 'Feb', earnings: 30000, expenses: 13980 },
-  { name: 'Mar', earnings: 60000, expenses: 38000 },
-  { name: 'Apr', earnings: 47800, expenses: 39080 },
-  { name: 'May', earnings: 58900, expenses: 48000 },
-  { name: 'Jun', earnings: 63900, expenses: 38000 },
-  { name: 'Jul', earnings: 55000, expenses: 43000 },
-  { name: 'Aug', earnings: 70000, expenses: 50000 },
-];
+const MONTHS_MAP = {
+  "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
+  "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11
+};
 
-const dataQuarter = [
-  { name: 'Q1', earnings: 130000, expenses: 76000 },
-  { name: 'Q2', earnings: 170600, expenses: 125000 },
-  { name: 'Q3', earnings: 188900, expenses: 131000 },
-  { name: 'Q4', earnings: 210000, expenses: 150000 },
-];
+const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default function RevenueChart() {
-  const [filter, setFilter] = useState('Last 8 Months');
-  const chartData = filter === 'Quarter' ? dataQuarter : data;
+  const [filter, setFilter] = useState('Monthly');
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [fees, expenses] = await Promise.all([getAllFees(), getAllExpenses()]);
+      processData(fees, expenses);
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getWeekKey = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    // Set to nearest previous Sunday
+    d.setDate(d.getDate() - d.getDay());
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const processData = (fees, expenses) => {
+    const mData = {};
+    const wData = {};
+
+    // Helper to get key from year and month index
+    const getMonthKey = (year, monthIndex) => `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+
+    // Process Fees
+    fees.forEach(fee => {
+        const amount = Number(fee.paid || 0);
+        
+        // Monthly
+        if (fee.month && fee.year) {
+            const monthIndex = MONTHS_MAP[fee.month];
+            if (monthIndex !== undefined) {
+                const key = getMonthKey(fee.year, monthIndex);
+                if (!mData[key]) mData[key] = { earnings: 0, expenses: 0, year: Number(fee.year), month: monthIndex };
+                mData[key].earnings += amount;
+            }
+        }
+
+        // Weekly - use createdAt if available
+        if (fee.createdAt) {
+            const date = fee.createdAt.toDate ? fee.createdAt.toDate() : new Date(fee.createdAt.seconds * 1000);
+            const weekKey = getWeekKey(date);
+            if (!wData[weekKey]) wData[weekKey] = { earnings: 0, expenses: 0, date: weekKey };
+            wData[weekKey].earnings += amount;
+        }
+    });
+
+    // Process Expenses
+    expenses.forEach(expense => {
+      if (expense.date) {
+        const date = new Date(expense.date);
+        const year = date.getFullYear();
+        const monthIndex = date.getMonth();
+        const amount = Number(expense.amount || 0);
+
+        // Monthly
+        const mKey = getMonthKey(year, monthIndex);
+        if (!mData[mKey]) mData[mKey] = { earnings: 0, expenses: 0, year, month: monthIndex };
+        mData[mKey].expenses += amount;
+
+        // Weekly
+        const wKey = getWeekKey(date);
+        if (!wData[wKey]) wData[wKey] = { earnings: 0, expenses: 0, date: wKey };
+        wData[wKey].expenses += amount;
+      }
+    });
+
+    // Convert Monthly to array and sort
+    const sortedMonthly = Object.entries(mData)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, val]) => ({
+        name: SHORT_MONTHS[val.month],
+        earnings: val.earnings,
+        expenses: val.expenses,
+        fullDate: key 
+      }));
+
+    // Convert Weekly to array and sort
+    const sortedWeekly = Object.entries(wData)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, val]) => {
+          const [y, m, d] = key.split('-');
+          return {
+            name: `${d} ${SHORT_MONTHS[parseInt(m)-1]}`,
+            earnings: val.earnings,
+            expenses: val.expenses,
+            fullDate: key
+          };
+      });
+    
+    setMonthlyData(sortedMonthly);
+    setWeeklyData(sortedWeekly);
+  };
+
+  const getFilteredData = () => {
+    if (filter === 'Monthly') {
+       // Return last 12 months
+       return monthlyData.slice(-12);
+    } else if (filter === 'Weekly') {
+       // Return last 8 weeks
+       return weeklyData.slice(-8);
+    }
+    return [];
+  };
+
+  const chartData = getFilteredData();
+
+  if (loading) {
+      return (
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-[350px] flex items-center justify-center">
+            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+      );
+  }
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-[350px]">
@@ -32,8 +148,8 @@ export default function RevenueChart() {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
         >
-            <option value="Last 8 Months">Last 8 Months</option>
-            <option value="Quarter">Quarter Months</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
         </select>
       </div>
       
@@ -48,31 +164,37 @@ export default function RevenueChart() {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height="75%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#fb923c" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#fb923c" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-          <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-          <Tooltip 
-            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-          />
-          <Area type="monotone" dataKey="earnings" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorEarnings)" />
-          <Area type="monotone" dataKey="expenses" stroke="#fb923c" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
-        </AreaChart>
-      </ResponsiveContainer>
+      {chartData.length > 0 ? (
+        <ResponsiveContainer width="100%" height="75%">
+            <AreaChart
+            data={chartData}
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            >
+            <defs>
+                <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#fb923c" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#fb923c" stopOpacity={0}/>
+                </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
+            <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+            <Tooltip 
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+            />
+            <Area type="monotone" dataKey="earnings" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorEarnings)" />
+            <Area type="monotone" dataKey="expenses" stroke="#fb923c" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
+            </AreaChart>
+        </ResponsiveContainer>
+      ) : (
+        <div className="flex items-center justify-center h-[75%] text-slate-400">
+            No data available
+        </div>
+      )}
     </div>
   );
 }

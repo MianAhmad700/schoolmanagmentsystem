@@ -96,3 +96,39 @@ export const getStudentMonthlyAttendance = async (studentId, monthStr) => {
         throw error;
     }
 };
+
+export const getAttendanceRange = async (startDate, endDate) => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("date", ">=", startDate),
+      where("date", "<=", endDate)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const dailyStats = {}; // date -> { present: 0, absent: 0 }
+
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const date = data.date;
+        
+        if (!dailyStats[date]) {
+            dailyStats[date] = { date, present: 0, absent: 0, leave: 0, late: 0 };
+        }
+        
+        if (data.records) {
+            Object.values(data.records).forEach(status => {
+                if (status === 'present') dailyStats[date].present++;
+                else if (status === 'absent') dailyStats[date].absent++;
+                else if (status === 'leave') dailyStats[date].leave++;
+                else if (status === 'late') dailyStats[date].late++; // Count late as present? Or separate? Usually present.
+            });
+        }
+    });
+    
+    return Object.values(dailyStats).sort((a, b) => a.date.localeCompare(b.date));
+  } catch (error) {
+    console.error("Error fetching attendance range:", error);
+    throw error;
+  }
+};

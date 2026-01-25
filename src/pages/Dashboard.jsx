@@ -53,7 +53,10 @@ export default function Dashboard() {
       const teachersSnap = await getDocs(collection(db, 'teachers'));
       const teacherCount = teachersSnap.size;
 
-      // Mock other data for visual fidelity to reference
+      // 3. Staff Count
+      const staffSnap = await getDocs(collection(db, 'staff'));
+      const staffCount = staffSnap.size;
+
       setStats([
         {
           title: "Students",
@@ -69,7 +72,7 @@ export default function Dashboard() {
         },
         {
           title: "Staffs",
-          value: "165", // Mocked
+          value: staffCount.toString(),
           icon: UserCheck,
           color: "blue"
         }

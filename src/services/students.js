@@ -14,20 +14,25 @@ import { db } from "../lib/firebase";
 
 const COLLECTION_NAME = "students";
 
-export const getAllStudents = async ({ filterClass = null, searchTerm = '' } = {}) => {
+export const getAllStudents = async ({ filterClass = null, filterYear = null, searchTerm = '' } = {}) => {
   try {
     let constraints = [collection(db, COLLECTION_NAME)];
 
     if (searchTerm) {
-      constraints.push(where("name", ">=", searchTerm));
-      constraints.push(where("name", "<=", searchTerm + '\uf8ff'));
-      constraints.push(orderBy("name"));
+      // Search by admissionNo (ID) instead of name
+      constraints.push(where("admissionNo", "==", searchTerm));
     } else {
       if (filterClass) {
         constraints.push(where("classId", "==", filterClass));
       }
-      // Removed server-side sorting to prevent missing index errors and ensure all docs are returned
-      // constraints.push(orderBy("createdAt", "desc"));
+      
+      if (filterYear) {
+         // Filter by admission year (assuming admissionDate format YYYY-MM-DD)
+         const startDate = `${filterYear}-01-01`;
+         const endDate = `${filterYear}-12-31`;
+         constraints.push(where("admissionDate", ">=", startDate));
+         constraints.push(where("admissionDate", "<=", endDate));
+      }
     }
 
     const q = query(...constraints);

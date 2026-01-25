@@ -127,19 +127,19 @@ export default function FeeCollection({ onSuccess }) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5">
         <h3 className="text-lg font-bold text-slate-800">Collect Fees</h3>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col">
-        <div className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 flex-1 flex flex-col">
+        <div className="space-y-2">
             {/* Class Selection */}
             <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Class</label>
             <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="block w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             >
                 <option value="">Select Class</option>
                 {CLASSES.map(c => <option key={c} value={c}>Class {c}</option>)}
@@ -152,7 +152,7 @@ export default function FeeCollection({ onSuccess }) {
             <div className="relative">
                 <select
                     {...register("studentId", { required: true })}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none disabled:opacity-50"
+                    className="block w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none disabled:opacity-50"
                     disabled={!selectedClass || loadingStudents}
                 >
                 <option value="">Select Student</option>
@@ -167,12 +167,12 @@ export default function FeeCollection({ onSuccess }) {
             </div>
 
             {/* Month & Year */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Month</label>
                 <select
                 {...register("month", { required: true })}
-                className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="block w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 >
                 {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
@@ -182,20 +182,20 @@ export default function FeeCollection({ onSuccess }) {
                 <input
                 type="number"
                 {...register("year", { required: true })}
-                className="block w-full px-4 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="block w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 />
             </div>
             </div>
         </div>
 
-        <div className="bg-slate-50 rounded-xl p-4 space-y-4 border border-slate-100 mt-auto">
+        <div className="bg-slate-50 rounded-xl p-3 space-y-2 border border-slate-100">
             <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Payable Amount (PKR)</label>
                 <input
                     type="number"
                     {...register("total")}
                     readOnly
-                    className="block w-full px-4 py-2.5 bg-white border-slate-200 rounded-xl text-sm text-slate-500 focus:outline-none"
+                    className="block w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-500 focus:outline-none"
                 />
             </div>
 
@@ -204,11 +204,11 @@ export default function FeeCollection({ onSuccess }) {
                 <input
                     type="number"
                     {...register("paid", { required: true })}
-                    className="block w-full px-4 py-2.5 bg-white border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="block w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 />
             </div>
 
-            <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+            <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
                 <div>
                     <p className="text-xs text-slate-500 uppercase font-bold">Status</p>
                     <p className={`text-lg font-bold ${
@@ -229,7 +229,7 @@ export default function FeeCollection({ onSuccess }) {
         <button
             type="submit"
             disabled={submitting}
-            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+            className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
         >
             {submitting ? (
                 <>

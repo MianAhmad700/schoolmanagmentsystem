@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Upload, Download } from 'lucide-react';
+import { Plus, Search, Filter, Upload, Download, Calendar } from 'lucide-react';
 import StudentTable from '../components/students/StudentTable';
 import StudentForm from '../components/students/StudentForm';
 import BulkUpload from '../components/students/BulkUpload';
@@ -17,6 +17,7 @@ export default function Students() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('');
+  const [filterYear, setFilterYear] = useState('');
   
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -33,6 +34,7 @@ export default function Students() {
     try {
       const data = await getAllStudents({
         filterClass: filterClass || null,
+        filterYear: filterYear || null,
         searchTerm: debouncedSearch || ''
       });
       
@@ -51,7 +53,7 @@ export default function Students() {
 
   useEffect(() => {
     fetchStudents();
-  }, [debouncedSearch, filterClass]);
+  }, [debouncedSearch, filterClass, filterYear]);
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this student?")) {
@@ -90,10 +92,27 @@ export default function Students() {
               <input
                 type="text"
                 className="block w-full pl-9 pr-3 py-2 border border-blue-100 rounded-xl text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-400"
-                placeholder="Search by name..."
+                placeholder="Search by Student ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+
+            {/* Year Filter */}
+            <div className="relative flex-grow lg:flex-grow-0 lg:w-32">
+              <select
+                className="block w-full pl-3 pr-8 py-2 border-none rounded-xl text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer appearance-none"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+              >
+                <option value="">All Years</option>
+                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                <Calendar className="h-3 w-3" />
+              </div>
             </div>
 
             {/* Class Filter */}

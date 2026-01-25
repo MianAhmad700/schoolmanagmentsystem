@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Teachers from './pages/Teachers';
+import Staff from './pages/Staff';
 import Attendance from './pages/Attendance';
 import Finance from './pages/Finance';
 import Results from './pages/Results';
@@ -30,6 +31,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
+            <Route path="staff" element={<Staff />} />
             <Route path="attendance" element={<Attendance />} />
             <Route path="finance" element={<Finance />} />
             <Route path="results" element={<Results />} />

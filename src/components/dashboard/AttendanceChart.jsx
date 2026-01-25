@@ -1,21 +1,79 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const data = [
-  { name: 'Mon', present: 90, absent: 10 },
-  { name: 'Tue', present: 85, absent: 15 },
-  { name: 'Wed', present: 95, absent: 5 },
-  { name: 'Thu', present: 88, absent: 12 },
-  { name: 'Fri', present: 92, absent: 8 },
-];
+import { useState, useEffect } from 'react';
+import { getAttendanceRange } from '../../services/attendance';
 
 export default function AttendanceChart() {
+  const [filter, setFilter] = useState('Weekly');
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, [filter]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+        const today = new Date();
+        let startDate = new Date();
+        
+        if (filter === 'Weekly') {
+            // Last 7 days
+            startDate.setDate(today.getDate() - 6);
+        } else {
+            // Last 30 days
+            startDate.setDate(today.getDate() - 29);
+        }
+        
+        const startStr = startDate.toISOString().split('T')[0];
+        const endStr = today.toISOString().split('T')[0];
+        
+        const records = await getAttendanceRange(startStr, endStr);
+        
+        // Fill in missing days
+        const chartData = [];
+        for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            const record = records.find(r => r.date === dateStr);
+            
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue
+            const dayNum = d.getDate();
+            
+            chartData.push({
+                name: filter === 'Weekly' ? dayName : `${dayNum} ${d.toLocaleDateString('en-US', { month: 'short' })}`,
+                present: record ? record.present + record.late : 0, // Counting late as present for simplified view
+                absent: record ? record.absent : 0,
+                leave: record ? record.leave : 0
+            });
+        }
+        
+        setData(chartData);
+    } catch (error) {
+        console.error("Error fetching attendance chart data:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  if (loading) {
+      return (
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-[350px] flex items-center justify-center">
+            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+      );
+  }
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-[350px]">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-bold text-slate-800">Attendance</h3>
-        <select className="bg-slate-50 border-none text-sm font-medium text-slate-600 rounded-lg py-1 px-3">
-            <option>Weekly</option>
-            <option>Monthly</option>
+        <select 
+            className="bg-slate-50 border-none text-sm font-medium text-slate-600 rounded-lg py-1 px-3"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+        >
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
         </select>
       </div>
 

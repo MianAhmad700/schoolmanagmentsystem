@@ -57,9 +57,11 @@ export default function TeacherTable({ teachers, loading, onEdit, onDelete, clas
         <tbody className="bg-white divide-y divide-slate-100">
           {loading ? (
             <tr>
-              <td colSpan="7" className="px-6 py-24 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-                <p className="mt-2 text-slate-500">Loading teachers...</p>
+              <td colSpan="7" className="px-6 py-5 h-64 text-center align-center">
+                <div className="flex flex-col items-center justify-center h-full">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                    <p className="mt-2 text-slate-500">Loading teachers...</p>
+                </div>
               </td>
             </tr>
           ) : teachers.length === 0 ? (

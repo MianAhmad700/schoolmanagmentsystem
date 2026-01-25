@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { FileText, Printer, Download } from 'lucide-react';
+import { FileText, Printer, Download, FileSpreadsheet } from 'lucide-react';
 import { getStudentsByClass } from '../../services/students';
 import { getClassExamResults } from '../../services/results';
 import { exportResultsToExcel } from '../../utils/excelGenerator';
 import { cn } from '../../lib/utils';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const CLASSES = ["PG", "Nursery", "Prep", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const EXAMS = ["First Term", "Mid Term", "Final Term"];
@@ -109,6 +112,115 @@ export default function ResultSheet() {
     toast.success("Excel exported successfully");
   };
 
+  const handleStudentPdf = (student) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.text("Iqbal High School Kot Abdullah", 105, 20, { align: "center" });
+    
+    doc.setFontSize(16);
+    doc.text(`Result Card: ${selectedExam}`, 105, 30, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`Class: ${selectedClass}`, 105, 38, { align: "center" });
+
+    // Student Info
+    doc.setLineWidth(0.5);
+    doc.line(20, 45, 190, 45);
+    
+    doc.setFontSize(12);
+    doc.text(`Name: ${student.name}`, 20, 55);
+    doc.text(`Roll No: ${student.rollNo}`, 140, 55);
+    doc.text(`Father Name: ${student.fatherName || '-'}`, 20, 65); 
+    
+    doc.line(20, 70, 190, 70);
+
+    // Marks Table
+    const tableData = subjects.map(sub => {
+        const obtained = results[student.id]?.[sub] || '-';
+        // Assuming 100 max marks per subject as per current assumption in calculatePercentage
+        const max = 100; 
+        const grade = obtained !== '-' ? getGrade((Number(obtained)/max)*100) : '-';
+        return [sub, max, obtained, grade]; 
+    });
+
+    autoTable(doc, {
+        startY: 80,
+        head: [['Subject', 'Max Marks', 'Obtained Marks', 'Grade']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [66, 133, 244] }, // Blue header
+    });
+
+    // Summary
+    const finalY = doc.lastAutoTable.finalY + 10;
+    const totalObtained = calculateTotal(student.id);
+    const totalMax = subjects.length * 100;
+    const percentage = calculatePercentage(student.id);
+    const grade = getGrade(percentage);
+
+    doc.setFontSize(12);
+    doc.text(`Total Marks: ${totalMax}`, 20, finalY);
+    doc.text(`Obtained Marks: ${totalObtained}`, 20, finalY + 10);
+    doc.text(`Percentage: ${percentage}%`, 140, finalY);
+    doc.text(`Grade: ${grade}`, 140, finalY + 10);
+
+    // Footer
+    doc.line(20, finalY + 40, 60, finalY + 40);
+    doc.text("Principal Signature", 20, finalY + 45);
+
+    doc.line(140, finalY + 40, 180, finalY + 40);
+    doc.text("Class Teacher", 140, finalY + 45);
+
+    doc.save(`${student.name}_${selectedExam}_Result.pdf`);
+  };
+
+  const handleStudentExcel = (student) => {
+    const wb = XLSX.utils.book_new();
+    
+    const wsData = [
+        ["Iqbal High School Kot Abdullah"],
+        [`Result Card: ${selectedExam} - Class ${selectedClass}`],
+        [],
+        ["Student Name:", student.name, "Roll No:", student.rollNo],
+        ["Father Name:", student.fatherName || '-'],
+        [],
+        ["Subject", "Max Marks", "Obtained Marks", "Grade"],
+    ];
+
+    subjects.forEach(sub => {
+        const obtained = results[student.id]?.[sub] || '-';
+        const max = 100;
+        const grade = obtained !== '-' ? getGrade((Number(obtained)/max)*100) : '-';
+        wsData.push([sub, max, obtained, grade]);
+    });
+
+    wsData.push([]);
+    wsData.push(["Total", subjects.length * 100, calculateTotal(student.id)]);
+    wsData.push(["Percentage", calculatePercentage(student.id) + "%"]);
+    wsData.push(["Grade", getGrade(calculatePercentage(student.id))]);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+    // Merging Title Cells
+    ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }, // School Name
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }, // Exam Name
+    ];
+
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 10 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Result Card");
+    XLSX.writeFile(wb, `${student.name}_${selectedExam}.xlsx`);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
       <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
@@ -194,6 +306,7 @@ export default function ResultSheet() {
                                 <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200">Total</th>
                                 <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200">%</th>
                                 <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200">Grade</th>
+                                <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200 print:hidden">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-200">
@@ -201,22 +314,39 @@ export default function ResultSheet() {
                                 const total = calculateTotal(student.id);
                                 const percentage = calculatePercentage(student.id);
                                 const grade = getGrade(percentage);
-                                
+
                                 return (
                                     <tr key={student.id} className="hover:bg-slate-50">
-                                        <td className="border border-slate-300 px-4 py-2 text-sm text-slate-900 font-medium">{student.rollNo}</td>
-                                        <td className="border border-slate-300 px-4 py-2 text-sm text-slate-900">{student.name}</td>
+                                        <td className="border border-slate-300 px-4 py-2 text-sm text-slate-500">{student.rollNo}</td>
+                                        <td className="border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900">{student.name}</td>
                                         {subjects.map(sub => (
-                                            <td key={sub} className="border border-slate-300 px-4 py-2 text-center text-sm text-slate-500">
+                                            <td key={sub} className="border border-slate-300 px-4 py-2 text-sm text-center text-slate-500">
                                                 {results[student.id]?.[sub] || '-'}
                                             </td>
                                         ))}
-                                        <td className="border border-slate-300 px-4 py-2 text-center text-sm font-bold text-slate-900 bg-slate-50">{total}</td>
-                                        <td className="border border-slate-300 px-4 py-2 text-center text-sm font-bold text-slate-900 bg-slate-50">{percentage}%</td>
-                                        <td className={cn(
-                                            "border border-slate-300 px-4 py-2 text-center text-sm font-bold bg-slate-50",
-                                            grade === 'F' ? "text-red-600" : "text-green-600"
-                                        )}>{grade}</td>
+                                        <td className="border border-slate-300 px-4 py-2 text-sm text-center font-bold text-slate-900 bg-slate-50">{total}</td>
+                                        <td className="border border-slate-300 px-4 py-2 text-sm text-center font-bold text-slate-900 bg-slate-50">{percentage}%</td>
+                                        <td className={`border border-slate-300 px-4 py-2 text-sm text-center font-bold bg-slate-50 ${
+                                            grade === 'F' ? 'text-red-600' : 'text-green-600'
+                                        }`}>{grade}</td>
+                                        <td className="border border-slate-300 px-4 py-2 text-center print:hidden">
+                                            <div className="flex justify-center space-x-2">
+                                                <button
+                                                    onClick={() => handleStudentPdf(student)}
+                                                    className="p-1 text-slate-400 hover:text-blue-600"
+                                                    title="Print PDF"
+                                                >
+                                                    <Printer className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleStudentExcel(student)}
+                                                    className="p-1 text-slate-400 hover:text-green-600"
+                                                    title="Export Excel"
+                                                >
+                                                    <FileSpreadsheet className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 );
                             })}

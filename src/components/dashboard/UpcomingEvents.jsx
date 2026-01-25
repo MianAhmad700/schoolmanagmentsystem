@@ -1,33 +1,46 @@
 import { MoreHorizontal } from 'lucide-react';
-
-const events = [
-    {
-        id: 1,
-        title: "New Student Inauguration Ceremony",
-        grade: "Grade 7",
-        date: "15",
-        month: "July",
-        time: "7:00 AM - 8:00 AM"
-    },
-    {
-        id: 2,
-        title: "Chairman of Student Body Handover",
-        grade: "Grade 8",
-        date: "19",
-        month: "July",
-        time: "10:00 AM - 11:00 AM"
-    },
-    {
-        id: 3,
-        title: "Closing of School Clubs Acceptance",
-        grade: "Grade 7",
-        date: "27",
-        month: "July",
-        time: "3:00 PM"
-    }
-];
+import { useState, useEffect } from 'react';
+import { getNotices } from '../../services/notices';
 
 export default function UpcomingEvents() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+        const notices = await getNotices();
+        // Use notices as events for now
+        const processedEvents = notices.slice(0, 3).map(n => {
+            const dateObj = new Date(n.date);
+            return {
+                id: n.id,
+                title: n.title,
+                grade: "All Grades", // Default since notices don't have grade
+                date: dateObj.getDate(),
+                month: dateObj.toLocaleDateString('en-US', { month: 'long' }),
+                time: "All Day" // Default
+            };
+        });
+        setEvents(processedEvents);
+    } catch (error) {
+        console.error("Error fetching events:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  if (loading) {
+      return (
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center h-[300px]">
+            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+      );
+  }
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
       <div className="flex items-center justify-between mb-6">
@@ -38,21 +51,27 @@ export default function UpcomingEvents() {
       </div>
       
       <div className="space-y-4">
-        {events.map(event => (
-            <div key={event.id} className="bg-slate-50 p-4 rounded-xl flex items-start gap-4">
-                <div className="flex-shrink-0 bg-[#FCD980] w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-900 shadow-sm">
-                    <span className="text-xs font-semibold">{event.month}</span>
-                    <span className="text-lg font-bold leading-none">{event.date}</span>
-                </div>
-                <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                         <p className="text-xs text-slate-400 mb-1">{event.time}</p>
+        {events.length > 0 ? (
+            events.map(event => (
+                <div key={event.id} className="bg-slate-50 p-4 rounded-xl flex items-start gap-4">
+                    <div className="flex-shrink-0 bg-[#FCD980] w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-900 shadow-sm">
+                        <span className="text-xs font-semibold">{event.month}</span>
+                        <span className="text-lg font-bold leading-none">{event.date}</span>
                     </div>
-                    <h4 className="font-bold text-slate-800 text-sm mb-1 leading-tight">{event.title}</h4>
-                    <p className="text-xs text-blue-600 font-medium">{event.grade}</p>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                             <p className="text-xs text-slate-400 mb-1">{event.time}</p>
+                        </div>
+                        <h4 className="font-bold text-slate-800 text-sm mb-1 leading-tight">{event.title}</h4>
+                        <p className="text-xs text-blue-600 font-medium">{event.grade}</p>
+                    </div>
                 </div>
+            ))
+        ) : (
+            <div className="text-center text-slate-400 py-4">
+                No upcoming events
             </div>
-        ))}
+        )}
       </div>
     </div>
   );

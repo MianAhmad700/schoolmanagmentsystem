@@ -55,6 +55,23 @@ export const getFees = async () => {
   }
 };
 
+export const getAllFees = async () => {
+  try {
+    const q = query(
+      collection(db, FEES_COLLECTION), 
+      orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching all fees:", error);
+    throw error;
+  }
+};
+
 // --- Expenses ---
 
 export const addExpense = async (expenseData) => {
@@ -86,6 +103,23 @@ export const getExpenses = async () => {
     }));
   } catch (error) {
     console.error("Error fetching expenses:", error);
+    throw error;
+  }
+};
+
+export const getAllExpenses = async () => {
+  try {
+    const q = query(
+      collection(db, EXPENSES_COLLECTION), 
+      orderBy('date', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching all expenses:", error);
     throw error;
   }
 };

@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, Menu, Search, Mic, Bell, User } from 'lucide-react';
+import { LogOut, Menu, Search, Mic, Bell, User, ChevronDown } from 'lucide-react';
 
 export default function Navbar() {
   const { logout, currentUser } = useAuth();
+  const [isYearOpen, setIsYearOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState('2024-2025');
+  const years = ['2023-2024', '2024-2025', '2025-2026' ,'2026-2027'];
 
   return (
     <div className="bg-white h-20 flex items-center justify-between px-8 border-b border-slate-100">
@@ -23,10 +27,28 @@ export default function Navbar() {
 
       {/* Right: Profile & Actions */}
       <div className="flex items-center gap-6">
-        <button className="relative p-2 text-slate-400 hover:text-blue-600 transition-colors">
-          <Bell className="h-6 w-6" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
+        <div className="relative">
+         
+          
+          {isYearOpen && (
+            <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-50">
+              {years.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => {
+                    setSelectedYear(year);
+                    setIsYearOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition-colors ${
+                    selectedYear === year ? 'text-blue-600 font-medium' : 'text-slate-600'
+                  }`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         
         <div className="flex items-center gap-4 pl-6 border-l border-slate-200">
           <div className="text-right hidden sm:block">
