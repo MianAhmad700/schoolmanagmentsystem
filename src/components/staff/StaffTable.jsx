@@ -5,7 +5,7 @@ export default function StaffTable({ staffList, loading, onEdit, onDelete }) {
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-100">
-          <thead className="bg-blue-500">
+          <thead className="bg-blue-500 sticky top-0 z-10">
             <tr>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                 Name

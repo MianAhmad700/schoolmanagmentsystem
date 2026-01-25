@@ -135,9 +135,9 @@ export default function AttendanceSheet({ selectedClass, selectedDate }) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-6">
+    <div className="flex flex-col lg:flex-row lg:h-full gap-6">
       {/* Left: Table Section (Grow) */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col h-[500px] lg:h-auto lg:min-h-0">
           
         {/* Action Bar */}
         <div className="flex flex-wrap gap-2 items-center shrink-0 mb-4">
@@ -262,8 +262,8 @@ export default function AttendanceSheet({ selectedClass, selectedDate }) {
       </div>
 
       {/* Right: Summary Section (Fixed width) */}
-      <div className="w-full lg:w-80 shrink-0 px-6 py-12">
-          <div className="grid grid-cols-1 gap-4 sticky top-6">
+      <div className="w-full lg:w-80 shrink-0 px-6 py-6 lg:py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sticky top-6">
             {ATTENDANCE_STATUSES.map(status => (
             <div key={status.id} className={cn("rounded-2xl p-4 relative overflow-hidden transition-all hover:shadow-lg flex flex-col justify-between h-32", status.cardClass)}>
                 <div className="flex justify-between items-start">

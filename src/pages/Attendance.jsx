@@ -8,7 +8,7 @@ export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   return (
-    <div className="flex flex-col h-full gap-6">
+    <div className="flex flex-col lg:h-full gap-6">
       {/* Header & Filters */}
       <div className="flex flex-col gap-4 text-slate-900 p-6 rounded-2xl shadow-sm shrink-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

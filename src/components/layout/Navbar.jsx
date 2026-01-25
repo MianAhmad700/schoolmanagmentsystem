@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Menu, Search, Mic, Bell, User, ChevronDown } from 'lucide-react';
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   const { logout, currentUser } = useAuth();
   const [isYearOpen, setIsYearOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState('2024-2025');
   const years = ['2023-2024', '2024-2025', '2025-2026' ,'2026-2027'];
 
   return (
-    <div className="bg-white h-20 flex items-center justify-between px-8 border-b border-slate-100">
+    <div className="bg-white h-20 flex items-center justify-between px-4 md:px-8 border-b border-slate-100">
       {/* Left: Page Title Placeholder (Or Breadcrumbs) - For now just hidden on mobile/desktop as Sidebar handles nav */}
       <div className="flex items-center">
-        <button className="text-slate-500 hover:text-slate-700 md:hidden mr-4">
+        <button 
+          onClick={onMenuClick}
+          className="text-slate-500 hover:text-slate-700 md:hidden mr-4 p-2"
+        >
           <Menu className="h-6 w-6" />
         </button>
-        <h2 className="text-2xl font-bold text-slate-800 hidden md:block">Dashboard</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-slate-800 hidden md:block">Dashboard</h2>
       </div>
 
       {/* Center: Search Bar */}

@@ -106,7 +106,7 @@ export default function Finance() {
              </div>
           </div>
           
-          <div className="h-[500px]">
+          <div className="h-auto lg:h-[500px]">
             <ExpenseTracker expenses={expenses} onUpdate={fetchData} />
           </div>
         </div>
