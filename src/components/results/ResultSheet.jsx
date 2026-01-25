@@ -117,7 +117,7 @@ export default function ResultSheet() {
     
     // Header
     doc.setFontSize(22);
-    doc.text("Iqbal High School Kot Abdullah", 105, 20, { align: "center" });
+    doc.text("Riphah Public School", 105, 20, { align: "center" });
     
     doc.setFontSize(16);
     doc.text(`Result Card: ${selectedExam}`, 105, 30, { align: "center" });
@@ -180,7 +180,7 @@ export default function ResultSheet() {
     const wb = XLSX.utils.book_new();
     
     const wsData = [
-        ["Iqbal High School Kot Abdullah"],
+        ["Riphah Public School"],
         [`Result Card: ${selectedExam} - Class ${selectedClass}`],
         [],
         ["Student Name:", student.name, "Roll No:", student.rollNo],
@@ -286,7 +286,7 @@ export default function ResultSheet() {
         {generated && (
             <div className="overflow-x-auto">
                 <div className="text-center mb-6 hidden print:block">
-                    <h2 className="text-2xl font-bold">Iqbal High School Kot Abdullah</h2>
+                    <h2 className="text-2xl font-bold">Riphah Public School</h2>
                     <h3 className="text-xl">Result Sheet - {selectedExam} ({selectedClass})</h3>
                 </div>
 

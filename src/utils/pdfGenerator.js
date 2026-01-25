@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 
-export const generateFeeReceipt = (feeData, schoolName = "Iqbal High School Kot Abdullah") => {
+export const generateFeeReceipt = (feeData, schoolName = "Riphah Public School") => {
   const doc = new jsPDF();
   
   // Header
@@ -67,7 +67,7 @@ export const generateFeeReceipt = (feeData, schoolName = "Iqbal High School Kot 
   doc.save(`Receipt_${feeData.studentName}_${feeData.month}_${feeData.year}.pdf`);
 };
 
-export const generateExpenseReceipt = (expenseData, schoolName = "Iqbal High School Kot Abdullah") => {
+export const generateExpenseReceipt = (expenseData, schoolName = "Riphah Public School") => {
   const doc = new jsPDF();
   
   // Header

@@ -37,7 +37,7 @@ export default function Login() {
             Sign in to SMSP
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Iqbal High School Kot Abdullah
+             Riphah Public School
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
