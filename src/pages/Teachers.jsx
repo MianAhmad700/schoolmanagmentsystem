@@ -141,7 +141,7 @@ export default function Teachers() {
       {showForm && (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setShowForm(false)}></div>
+            <div className="fixed inset-0 bg-slate-200/50 backdrop-blur-sm transition-opacity" aria-hidden="true" onClick={() => setShowForm(false)}></div>
             
             <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-4xl">
               <TeacherForm 

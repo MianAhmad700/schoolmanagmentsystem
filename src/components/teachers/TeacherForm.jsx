@@ -46,17 +46,10 @@ export default function TeacherForm({ teacher, onSuccess, onClose }) {
   };
 
   const onSubmit = async (data) => {
-    setUploading(true);
     try {
-      let photoUrl = teacher?.photoUrl || '';
-      
-      if (photo) {
-        photoUrl = await uploadFile(photo, 'teachers');
-      }
-
       const teacherData = {
         ...data,
-        photoUrl,
+        photoUrl: teacher?.photoUrl || '',
       };
 
       if (teacher?.id) {
@@ -71,48 +64,21 @@ export default function TeacherForm({ teacher, onSuccess, onClose }) {
     } catch (error) {
       console.error(error);
       toast.error("Failed to save teacher");
-    } finally {
-      setUploading(false);
     }
   };
 
   return (
     <div className="w-full flex flex-col">
-      <div className="px-6 py-4 bg-slate-900 flex justify-between items-center shrink-0">
+      <div className="px-6 py-4 bg-blue-500 flex justify-between items-center shrink-0">
         <h3 className="text-lg font-medium text-white">
           {teacher ? 'Edit Teacher' : 'Add New Teacher'}
         </h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+        <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
           <X className="h-6 w-6" />
         </button>
       </div>
       
       <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6 overflow-y-auto max-h-[80vh]">
-        {/* Photo Upload Section */}
-        <div className="flex justify-center">
-          <div className="relative">
-            <div className="h-32 w-32 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200">
-              {photoPreview ? (
-                <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-slate-400">
-                  <Upload className="h-10 w-10" />
-                </div>
-              )}
-            </div>
-            <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-blue-600 rounded-full p-2 cursor-pointer hover:bg-blue-700 shadow-sm">
-              <Upload className="h-4 w-4 text-white" />
-              <input 
-                id="photo-upload" 
-                type="file" 
-                className="hidden" 
-                accept="image/*"
-                onChange={handlePhotoChange}
-              />
-            </label>
-          </div>
-        </div>
-
         {/* Personal Info */}
         <div>
           <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2">Personal Information</h4>
