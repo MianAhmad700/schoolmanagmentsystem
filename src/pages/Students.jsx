@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Upload, Download, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, Upload, Download, Calendar, Trash2, ArrowUp } from 'lucide-react';
 import StudentTable from '../components/students/StudentTable';
 import StudentForm from '../components/students/StudentForm';
 import BulkUpload from '../components/students/BulkUpload';
 import StudentGenderChart from '../components/dashboard/StudentGenderChart';
-import { getAllStudents, deleteStudent } from '../services/students';
+import { getAllStudents, deleteStudent, deleteStudents, promoteStudents } from '../services/students';
 import { toast } from 'react-toastify';
 import Lottie from 'lottie-react';
 import studentAnimation from '../assets/animations/Student.json';
@@ -18,6 +18,7 @@ export default function Students() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('');
   const [filterYear, setFilterYear] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
   
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -76,6 +77,36 @@ export default function Students() {
     fetchStudents();
   };
 
+  const handleSelectionChange = (ids) => {
+    setSelectedIds(ids);
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedIds.length} students?`)) {
+      try {
+        await deleteStudents(selectedIds);
+        toast.success(`${selectedIds.length} students deleted successfully`);
+        setSelectedIds([]);
+        fetchStudents();
+      } catch (error) {
+        toast.error("Failed to delete students");
+      }
+    }
+  };
+
+  const handleBulkPromote = async () => {
+    if (window.confirm(`Are you sure you want to promote ${selectedIds.length} students to the next class?`)) {
+      try {
+        await promoteStudents(selectedIds);
+        toast.success(`${selectedIds.length} students promoted successfully`);
+        setSelectedIds([]);
+        fetchStudents();
+      } catch (error) {
+        toast.error("Failed to promote students");
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full gap-6">
       {/* Header & Filters */}
@@ -86,6 +117,26 @@ export default function Students() {
             <p className="text-sm text-slate-600 mt-1">Manage admissions, student profiles and records</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            {/* Bulk Actions */}
+            {selectedIds.length > 0 && (
+              <div className="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0 mr-2 animate-in fade-in slide-in-from-right-5 duration-300">
+                 <button
+                    onClick={handleBulkPromote}
+                    className="flex-1 lg:flex-none inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors"
+                  >
+                    <ArrowUp className="h-4 w-4 mr-2" />
+                    Promote ({selectedIds.length})
+                  </button>
+                  <button
+                    onClick={handleBulkDelete}
+                    className="flex-1 lg:flex-none inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete ({selectedIds.length})
+                  </button>
+              </div>
+            )}
+
             {/* Search */}
             <div className="relative flex-grow lg:flex-grow-0 lg:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -177,6 +228,8 @@ export default function Students() {
                 onEdit={handleEdit} 
                 onDelete={handleDelete}
                 onView={(student) => console.log("View", student)} 
+                selectedIds={selectedIds}
+                onSelectionChange={handleSelectionChange}
                 className="flex-1"
               />
             </>

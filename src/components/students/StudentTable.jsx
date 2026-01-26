@@ -2,22 +2,21 @@ import { Edit, Trash2, Eye } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useState } from 'react';
 
-export default function StudentTable({ students, loading, onEdit, onDelete, onView, className }) {
-  const [selectedIds, setSelectedIds] = useState([]);
-
+export default function StudentTable({ students, loading, onEdit, onDelete, onView, selectedIds, onSelectionChange, className }) {
+  
   const toggleSelectAll = () => {
     if (selectedIds.length === students.length) {
-      setSelectedIds([]);
+      onSelectionChange([]);
     } else {
-      setSelectedIds(students.map(s => s.id));
+      onSelectionChange(students.map(s => s.id));
     }
   };
 
   const toggleSelect = (id) => {
     if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter(sid => sid !== id));
+      onSelectionChange(selectedIds.filter(sid => sid !== id));
     } else {
-      setSelectedIds([...selectedIds, id]);
+      onSelectionChange([...selectedIds, id]);
     }
   };
 

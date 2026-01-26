@@ -136,3 +136,53 @@ export const bulkAddStudents = async (students) => {
     throw error;
   }
 };
+
+export const deleteStudents = async (ids) => {
+  try {
+    const promises = ids.map(id => deleteDoc(doc(db, COLLECTION_NAME, id)));
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Error deleting students:", error);
+    throw error;
+  }
+};
+
+const CLASS_ORDER = ["PG", "Nursery", "Prep", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+
+export const promoteStudents = async (ids) => {
+  try {
+    const promises = ids.map(async (id) => {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const student = docSnap.data();
+        const currentClass = student.classId;
+        const currentIndex = CLASS_ORDER.indexOf(currentClass);
+        
+        let nextClass = currentClass;
+        let status = student.status || 'active';
+        
+        if (currentIndex !== -1 && currentIndex < CLASS_ORDER.length - 1) {
+          nextClass = CLASS_ORDER[currentIndex + 1];
+        } else if (currentClass === "10") {
+          status = "graduated";
+          // Optionally keep class as 10 or set to something else
+        }
+        
+        if (nextClass !== currentClass || status !== student.status) {
+             await updateDoc(docRef, { 
+                classId: nextClass,
+                status: status,
+                lastPromotedAt: new Date().toISOString()
+             });
+        }
+      }
+    });
+    
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Error promoting students:", error);
+    throw error;
+  }
+};
