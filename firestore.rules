@@ -37,6 +37,11 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // Exams Collection
+    match /school_exams/{examId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // Notices Collection
     match /notices/{noticeId} {
       allow read, write: if isAuthenticated();

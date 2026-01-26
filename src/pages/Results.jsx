@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import ResultEntry from '../components/results/ResultEntry';
 import ResultSheet from '../components/results/ResultSheet';
+import CreateExam from '../components/results/CreateExam';
 import { cn } from '../lib/utils';
 
 export default function Results() {
-  const [activeTab, setActiveTab] = useState('entry'); // 'entry' or 'sheet'
+  const [activeTab, setActiveTab] = useState('create'); // 'create', 'entry' or 'sheet'
 
   return (
     <div className="space-y-6">
@@ -17,7 +18,18 @@ export default function Results() {
 
       {/* Tabs */}
       <div className="border-b border-slate-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab('create')}
+            className={cn(
+              "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm",
+              activeTab === 'create'
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            )}
+          >
+            Create Exam
+          </button>
           <button
             onClick={() => setActiveTab('entry')}
             className={cn(
@@ -44,7 +56,9 @@ export default function Results() {
       </div>
 
       <div className="max-w-6xl mx-auto">
-        {activeTab === 'entry' ? <ResultEntry /> : <ResultSheet />}
+        {activeTab === 'create' && <CreateExam />}
+        {activeTab === 'entry' && <ResultEntry />}
+        {activeTab === 'sheet' && <ResultSheet />}
       </div>
     </div>
   );

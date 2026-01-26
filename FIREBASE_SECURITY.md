@@ -24,6 +24,7 @@ service cloud.firestore {
     match /fees/{feeId} { allow read, write: if isAuthenticated(); }
     match /expenses/{expenseId} { allow read, write: if isAuthenticated(); }
     match /results/{resultId} { allow read, write: if isAuthenticated(); }
+    match /school_exams/{examId} { allow read, write: if isAuthenticated(); }
     match /notices/{noticeId} { allow read, write: if isAuthenticated(); }
     match /staff/{staffId} { allow read, write: if isAuthenticated(); }
 

@@ -19,6 +19,43 @@ const COLLECTION_NAME = 'results';
 // Collection 'results' -> Document ID: `${examName}_${classId}_${subject}`
 // Fields: examName, classId, subject, maxMarks, records: { studentId: marks }
 
+const EXAM_COLLECTION_NAME = 'school_exams';
+
+export const createExam = async (examData) => {
+  if (!db) throw new Error("Firestore database instance is missing");
+  try {
+    const docRef = await addDoc(collection(db, EXAM_COLLECTION_NAME), examData);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating exam:", error);
+    throw error;
+  }
+};
+
+export const getExams = async () => {
+  if (!db) throw new Error("Firestore database instance is missing");
+  try {
+    const querySnapshot = await getDocs(collection(db, EXAM_COLLECTION_NAME));
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching exams:", error);
+    throw error;
+  }
+};
+
+export const deleteExam = async (id) => {
+  if (!db) throw new Error("Firestore database instance is missing");
+  try {
+    await deleteDoc(doc(db, EXAM_COLLECTION_NAME, id));
+  } catch (error) {
+    console.error("Error deleting exam:", error);
+    throw error;
+  }
+};
+
 export const saveSubjectResults = async (examName, classId, subject, maxMarks, marksData) => {
   try {
     const docId = `${examName}_${classId}_${subject}`.replace(/\s+/g, '_');

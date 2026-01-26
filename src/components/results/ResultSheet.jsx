@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { FileText, Printer, Download, FileSpreadsheet } from 'lucide-react';
 import { getStudentsByClass } from '../../services/students';
-import { getClassExamResults } from '../../services/results';
+import { getClassExamResults, getExams } from '../../services/results';
 import { exportResultsToExcel } from '../../utils/excelGenerator';
 import { cn } from '../../lib/utils';
 import jsPDF from 'jspdf';
@@ -11,7 +11,6 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 const CLASSES = ["PG", "Nursery", "Prep", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-const EXAMS = ["First Term", "Mid Term", "Final Term"];
 
 export default function ResultSheet() {
   const { register, watch } = useForm();
@@ -20,9 +19,24 @@ export default function ResultSheet() {
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [generated, setGenerated] = useState(false);
+  const [exams, setExams] = useState([]);
 
   const selectedClass = watch("classId");
   const selectedExam = watch("examName");
+
+  useEffect(() => {
+    loadExams();
+  }, []);
+
+  const loadExams = async () => {
+    try {
+        const data = await getExams();
+        setExams(data);
+    } catch (error) {
+        console.error("Failed to load exams", error);
+        toast.error(`Failed to load exams: ${error.message}`);
+    }
+  };
 
   const generateSheet = async () => {
     if (!selectedClass || !selectedExam) return;
@@ -63,6 +77,12 @@ export default function ResultSheet() {
       setLoading(false);
     }
   };
+
+  // Filter exams based on selected class (if a class is selected)
+  const availableExams = selectedClass 
+    ? exams.filter(e => e.classes && e.classes.includes(selectedClass))
+    : exams;
+
 
   const calculateTotal = (studentId) => {
     if (!results[studentId]) return 0;
@@ -224,19 +244,19 @@ export default function ResultSheet() {
   return (
     <div className="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
       <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-        <h3 className="text-lg font-medium text-slate-900">Result Tabulation Sheet</h3>
+        <h3 className="text-lg font-bold text-slate-800">Result Tabulation Sheet</h3>
         {generated && (
           <div className="flex space-x-2">
              <button 
                 onClick={handleExport}
-                className="inline-flex items-center px-3 py-1 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
              >
                  <Download className="h-4 w-4 mr-2" />
                  Export Excel
              </button>
              <button 
                 onClick={() => window.print()}
-                className="inline-flex items-center px-3 py-1 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none"
+                className="inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
              >
                  <Printer className="h-4 w-4 mr-2" />
                  Print
@@ -247,31 +267,33 @@ export default function ResultSheet() {
 
       <div className="p-6 space-y-6">
         {/* Controls */}
-        <div className="flex flex-wrap gap-4 items-end bg-slate-50 p-4 rounded-md border border-slate-200">
-            <div>
-                <label className="block text-sm font-medium text-slate-700">Exam Name</label>
-                <select
-                    {...register("examName")}
-                    className="mt-1 block w-40 pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                    <option value="">Select Exam</option>
-                    {EXAMS.map(e => <option key={e} value={e}>{e}</option>)}
-                </select>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-slate-700">Class</label>
+        <div className="flex flex-wrap gap-4 items-end bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="w-full sm:w-auto">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Class</label>
                 <select
                     {...register("classId")}
-                    className="mt-1 block w-40 pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    className="block w-full sm:w-48 pl-3 pr-10 py-2.5 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
                 >
                     <option value="">Select Class</option>
                     {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
             </div>
+            <div className="w-full sm:w-auto">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Exam Name</label>
+                <select
+                    {...register("examName")}
+                    className="block w-full sm:w-48 pl-3 pr-10 py-2.5 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all disabled:bg-slate-100 disabled:text-slate-400"
+                    disabled={!selectedClass}
+                >
+                    <option value="">Select Exam</option>
+                    {availableExams.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
+                </select>
+                {!selectedClass && <p className="text-xs text-slate-500 mt-1">Select class first</p>}
+            </div>
             <button
                 onClick={generateSheet}
                 disabled={loading || !selectedClass || !selectedExam}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="inline-flex items-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
                 {loading ? 'Generating...' : (
                     <>
@@ -284,63 +306,66 @@ export default function ResultSheet() {
 
         {/* Results Table */}
         {generated && (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
                 <div className="text-center mb-6 hidden print:block">
                     <h2 className="text-2xl font-bold">Riphah Public School</h2>
                     <h3 className="text-xl">Result Sheet - {selectedExam} ({selectedClass})</h3>
                 </div>
 
                 {students.length === 0 ? (
-                     <div className="text-center py-8 text-slate-500">No students found.</div>
+                     <div className="text-center py-12 text-slate-500">
+                        <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+                        <p className="text-lg font-medium">No students found for this class.</p>
+                     </div>
                 ) : (
-                    <table className="min-w-full divide-y divide-slate-200 border-collapse border border-slate-300">
-                        <thead className="bg-slate-100">
+                    <table className="min-w-full divide-y divide-slate-200 border-collapse">
+                        <thead className="bg-blue-600">
                             <tr>
-                                <th className="border border-slate-300 px-4 py-2 text-left text-xs font-bold text-slate-700 uppercase">Roll No</th>
-                                <th className="border border-slate-300 px-4 py-2 text-left text-xs font-bold text-slate-700 uppercase">Name</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r border-blue-500">Roll No</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r border-blue-500">Name</th>
                                 {subjects.map(sub => (
-                                    <th key={sub} className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase">
+                                    <th key={sub} className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider border-r border-blue-500">
                                         {sub}
                                     </th>
                                 ))}
-                                <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200">Total</th>
-                                <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200">%</th>
-                                <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200">Grade</th>
-                                <th className="border border-slate-300 px-4 py-2 text-center text-xs font-bold text-slate-700 uppercase bg-slate-200 print:hidden">Actions</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider bg-blue-700 border-r border-blue-600">Total</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider bg-blue-700 border-r border-blue-600">%</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider bg-blue-700 border-r border-blue-600">Grade</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider print:hidden">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-200">
-                            {students.map(student => {
+                            {students.map((student, index) => {
                                 const total = calculateTotal(student.id);
                                 const percentage = calculatePercentage(student.id);
                                 const grade = getGrade(percentage);
 
                                 return (
-                                    <tr key={student.id} className="hover:bg-slate-50">
-                                        <td className="border border-slate-300 px-4 py-2 text-sm text-slate-500">{student.rollNo}</td>
-                                        <td className="border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900">{student.name}</td>
+                                    <tr key={student.id} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                                        <td className="px-4 py-3 text-sm text-slate-700 font-medium border-r border-slate-200">{student.rollNo}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-900 font-medium border-r border-slate-200">{student.name}</td>
                                         {subjects.map(sub => (
-                                            <td key={sub} className="border border-slate-300 px-4 py-2 text-sm text-center text-slate-500">
+                                            <td key={sub} className="px-4 py-3 text-sm text-center text-slate-600 border-r border-slate-200">
                                                 {results[student.id]?.[sub] || '-'}
                                             </td>
                                         ))}
-                                        <td className="border border-slate-300 px-4 py-2 text-sm text-center font-bold text-slate-900 bg-slate-50">{total}</td>
-                                        <td className="border border-slate-300 px-4 py-2 text-sm text-center font-bold text-slate-900 bg-slate-50">{percentage}%</td>
-                                        <td className={`border border-slate-300 px-4 py-2 text-sm text-center font-bold bg-slate-50 ${
+                                        <td className="px-4 py-3 text-sm text-center font-bold text-blue-700 bg-blue-50 border-r border-slate-200">{total}</td>
+                                        <td className="px-4 py-3 text-sm text-center font-bold text-blue-700 bg-blue-50 border-r border-slate-200">{percentage}%</td>
+                                        <td className={`px-4 py-3 text-sm text-center font-bold border-r border-slate-200 bg-blue-50 ${
                                             grade === 'F' ? 'text-red-600' : 'text-green-600'
                                         }`}>{grade}</td>
-                                        <td className="border border-slate-300 px-4 py-2 text-center print:hidden">
+                                        <td className="px-4 py-3 text-center print:hidden">
                                             <div className="flex justify-center space-x-2">
                                                 <button
                                                     onClick={() => handleStudentPdf(student)}
-                                                    className="p-1 text-slate-400 hover:text-blue-600"
+                                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                                                     title="Print PDF"
                                                 >
                                                     <Printer className="h-4 w-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleStudentExcel(student)}
-                                                    className="p-1 text-slate-400 hover:text-green-600"
+                                                    className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors"
                                                     title="Export Excel"
                                                 >
                                                     <FileSpreadsheet className="h-4 w-4" />
