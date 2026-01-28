@@ -7,7 +7,8 @@ import {
   Receipt, 
   ClipboardList, 
   Bell,
-  Briefcase
+  Briefcase,
+  BookOpen
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -16,6 +17,7 @@ const navigation = [
   { name: 'Students', href: '/students', icon: Users },
   { name: 'Teachers', href: '/teachers', icon: GraduationCap },
   { name: 'Staff', href: '/staff', icon: Briefcase },
+  { name: 'Classes', href: '/classes', icon: BookOpen },
   { name: 'Attendance', href: '/attendance', icon: CalendarCheck },
   { name: 'Finance', href: '/finance', icon: Receipt },
   { name: 'Results', href: '/results', icon: ClipboardList },

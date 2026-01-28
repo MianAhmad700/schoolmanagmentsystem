@@ -52,6 +52,11 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // Classes Collection
+    match /classes/{classId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // Default deny for other collections
     match /{document=**} {
       allow read, write: if false;

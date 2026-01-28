@@ -5,6 +5,7 @@ import StudentForm from '../components/students/StudentForm';
 import BulkUpload from '../components/students/BulkUpload';
 import StudentGenderChart from '../components/dashboard/StudentGenderChart';
 import { getAllStudents, deleteStudent, deleteStudents, promoteStudents } from '../services/students';
+import { getAllClasses } from '../services/classes';
 import { toast } from 'react-toastify';
 import Lottie from 'lottie-react';
 import studentAnimation from '../assets/animations/Student.json';
@@ -19,9 +20,22 @@ export default function Students() {
   const [filterClass, setFilterClass] = useState('');
   const [filterYear, setFilterYear] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
+  const [classes, setClasses] = useState([]);
   
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const data = await getAllClasses();
+        setClasses(data);
+      } catch (error) {
+        console.error("Failed to load classes", error);
+      }
+    };
+    fetchClasses();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -174,19 +188,11 @@ export default function Students() {
                 onChange={(e) => setFilterClass(e.target.value)}
               >
                 <option value="">All Classes</option>
-                <option value="PG">Play Group</option>
-                <option value="Nursery">Nursery</option>
-                <option value="Prep">Prep</option>
-                <option value="1">Class 1</option>
-                <option value="2">Class 2</option>
-                <option value="3">Class 3</option>
-                <option value="4">Class 4</option>
-                <option value="5">Class 5</option>
-                <option value="6">Class 6</option>
-                <option value="7">Class 7</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-                <option value="10">Class 10</option>
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.name}>
+                    {cls.label}
+                  </option>
+                ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
                 <Filter className="h-3 w-3" />

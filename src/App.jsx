@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Teachers from './pages/Teachers';
 import Staff from './pages/Staff';
+import Classes from './pages/Classes';
 import Attendance from './pages/Attendance';
 import Finance from './pages/Finance';
 import Results from './pages/Results';
@@ -32,6 +33,7 @@ function App() {
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
             <Route path="staff" element={<Staff />} />
+            <Route path="classes" element={<Classes />} />
             <Route path="attendance" element={<Attendance />} />
             <Route path="finance" element={<Finance />} />
             <Route path="results" element={<Results />} />

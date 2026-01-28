@@ -1,8 +1,9 @@
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { addStudent, updateStudent } from '../../services/students';
+import { getAllClasses } from '../../services/classes';
 
 export default function StudentForm({ student, onSuccess, onClose }) {
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -12,6 +13,20 @@ export default function StudentForm({ student, onSuccess, onClose }) {
     }
   });
   const [uploading, setUploading] = useState(false);
+  const [classes, setClasses] = useState([]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const data = await getAllClasses();
+        setClasses(data);
+      } catch (error) {
+        console.error("Failed to load classes", error);
+        toast.error("Failed to load classes");
+      }
+    };
+    fetchClasses();
+  }, []);
 
   const onSubmit = async (data) => {
     setUploading(true);
@@ -119,19 +134,11 @@ export default function StudentForm({ student, onSuccess, onClose }) {
                 className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
               >
                 <option value="">Select Class</option>
-                <option value="PG">Play Group</option>
-                <option value="Nursery">Nursery</option>
-                <option value="Prep">Prep</option>
-                <option value="1">Class 1</option>
-                <option value="2">Class 2</option>
-                <option value="3">Class 3</option>
-                <option value="4">Class 4</option>
-                <option value="5">Class 5</option>
-                <option value="6">Class 6</option>
-                <option value="7">Class 7</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-                <option value="10">Class 10</option>
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.name}>
+                    {cls.label}
+                  </option>
+                ))}
               </select>
                {errors.classId && <span className="text-red-500 text-xs">{errors.classId.message}</span>}
             </div>
