@@ -4,8 +4,6 @@ import TeacherTable from '../components/teachers/TeacherTable';
 import TeacherForm from '../components/teachers/TeacherForm';
 import { getAllTeachers, deleteTeacher } from '../services/teachers';
 import { toast } from 'react-toastify';
-import Lottie from 'lottie-react';
-import teacherAnimation from '../assets/animations/Teacher.json';
 import TeacherStatsChart from '../components/dashboard/TeacherStatsChart';
 
 export default function Teachers() {
@@ -131,9 +129,6 @@ export default function Teachers() {
         {/* Right Side: Animation */}
         <div className="w-full xl:w-96 flex-shrink-0 flex flex-col gap-6">
            <TeacherStatsChart />
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center">
-             <Lottie animationData={teacherAnimation} loop={true} className="w-48 h-48" />
-          </div>
         </div>
       </div>
 
