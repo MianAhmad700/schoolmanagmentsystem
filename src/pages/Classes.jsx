@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, BookOpen } from 'lucide-react';
 import { toast } from 'react-toastify';
+import Lottie from 'lottie-react';
 import { getAllClasses, addClass, deleteClass } from '../services/classes';
+import teacherAnimation from '../assets/animations/Teacher.json';
 
 export default function Classes() {
   const [classes, setClasses] = useState([]);
@@ -94,6 +96,11 @@ export default function Classes() {
                 {adding ? 'Adding...' : 'Add Class'}
               </button>
             </form>
+          </div>
+
+          {/* Teacher Animation */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mt-6 flex items-center justify-center">
+            <Lottie animationData={teacherAnimation} loop={true} className="w-full h-auto max-h-64" />
           </div>
         </div>
 
